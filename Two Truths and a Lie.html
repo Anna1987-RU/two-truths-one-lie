@@ -1,0 +1,412 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Two Truths and a Lie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one centered column. Sticker title, passport stamp strip, postcard with the country, fox helper, three fact cards, next button. */
+  :root {
+    --sky1: #7fcfff;
+    --sky2: #dff4ff;
+    --card: #ffffff;
+    --fg: #2a2a5a;
+    --outline: #2a2a5a;
+    --accent: #ff5d8f;
+    --butter: #ffe066;
+    --on-bright: #2a2a5a;
+    --good: #14815a;
+    --bad: #c93a2f;
+    --btn: #ffffff;
+    --btn-fg: #2a2a5a;
+    --focus: #6c5ce7;
+    --soft: rgba(42, 42, 90, .64);
+    --ca: #ff8fab;
+    --cb: #6ec6ff;
+    --cc: #7ee0a8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+      --accent: #ff7aa6; --good: #6be8b0; --bad: #ff9a90; --btn: #3b3689; --btn-fg: #f1eeff;
+      --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+      --ca: #d6497a; --cb: #3a86d6; --cc: #2aa876;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+    --accent: #ff7aa6; --good: #6be8b0; --bad: #ff9a90; --btn: #3b3689; --btn-fg: #f1eeff;
+    --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+    --ca: #d6497a; --cb: #3a86d6; --cc: #2aa876;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background-color: var(--sky2);
+    background-image: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 420px);
+    background-repeat: no-repeat;
+    color: var(--fg);
+    font-family: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
+    font-weight: 600;
+    padding-block: 22px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  /* Title */
+  .hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  h1 {
+    margin: 0; font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; font-weight: 800;
+    font-size: clamp(2.2rem, 7.5vw, 4rem); line-height: 1.05;
+    display: flex; flex-wrap: wrap; justify-content: center; column-gap: .3em;
+  }
+  .word { display: inline-flex; }
+  .ltr {
+    display: inline-block; -webkit-text-stroke: .2em var(--outline); paint-order: stroke fill;
+    text-shadow: 0 .08em 0 var(--outline); transform: rotate(var(--r, 0deg));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ltr { animation: bob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+    @keyframes bob { 50% { transform: translateY(-.09em) rotate(calc(var(--r, 0deg) * -1)); } }
+  }
+  .sub {
+    margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem;
+    background: var(--card); border: 3px solid var(--outline); border-radius: 999px; padding: .2em 1em; box-shadow: 0 4px 0 var(--outline);
+  }
+
+  /* Passport stamps */
+  .stamps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; }
+  .stamp {
+    position: relative; aspect-ratio: 1; border-radius: 50%; border: 3px dashed var(--outline); background: var(--card);
+    display: grid; place-items: center; font-size: clamp(1rem, 4.2vw, 1.7rem); filter: grayscale(1); opacity: .55;
+    transition: transform .25s, opacity .25s, filter .25s;
+  }
+  .stamp.now { filter: none; opacity: 1; border-style: solid; transform: translateY(-4px) rotate(-6deg); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent); }
+  .stamp.right, .stamp.wrong { filter: none; opacity: 1; border-style: solid; }
+  .stamp.right { background: color-mix(in srgb, var(--good) 28%, var(--card)); }
+  .stamp.wrong { background: color-mix(in srgb, var(--bad) 24%, var(--card)); }
+  .stamp .mark {
+    position: absolute; right: -6px; bottom: -6px; width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid var(--outline);
+    font: 800 .7rem/1 'Baloo 2', sans-serif; display: none; place-items: center; color: var(--on-bright);
+  }
+  .stamp.right .mark { display: grid; background: #6be8b0; }
+  .stamp.wrong .mark { display: grid; background: #ff9a90; }
+
+  /* Postcard */
+  .postcard {
+    position: relative; background: var(--card); border: 4px solid var(--outline); border-radius: 22px; box-shadow: 0 7px 0 var(--outline);
+    padding: 16px 20px; display: flex; align-items: center; gap: 16px; transform: rotate(-.7deg);
+  }
+  .postcard::after {
+    content: ""; position: absolute; inset: 8px; border: 2.5px dashed color-mix(in srgb, var(--outline) 35%, transparent); border-radius: 14px; pointer-events: none;
+  }
+  .flag { font-size: clamp(2.6rem, 10vw, 3.8rem); line-height: 1; }
+  .where { display: flex; flex-direction: column; min-width: 0; }
+  .where small { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .9rem; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+  .where strong { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(1.6rem, 6vw, 2.3rem); line-height: 1.1; overflow-wrap: anywhere; }
+  .score { margin-left: auto; text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; line-height: 1; }
+  .score span { display: block; font-size: 1.8rem; color: var(--accent); }
+  .score small { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+
+  /* Fox */
+  .fox { display: flex; align-items: flex-start; gap: 12px; }
+  .fox-face {
+    flex: none; width: 62px; height: 62px; border-radius: 50%; background: var(--butter); border: 4px solid var(--outline);
+    display: grid; place-items: center; font-size: 2rem; box-shadow: 0 4px 0 var(--outline);
+  }
+  .fox-face.hop { animation: hop .6s; }
+  .fox-face.tilt { animation: tilt .6s; }
+  @keyframes hop { 30% { transform: translateY(-14px) rotate(-8deg); } 60% { transform: translateY(0) rotate(6deg); } }
+  @keyframes tilt { 25% { transform: rotate(-14deg); } 55% { transform: rotate(10deg); } }
+  @media (prefers-reduced-motion: reduce) { .fox-face.hop, .fox-face.tilt { animation: none; } }
+  .bubble {
+    position: relative; margin: 6px 0 0; flex: 1; min-width: 0; background: var(--card); border: 3px solid var(--outline);
+    border-radius: 18px; padding: 10px 14px; font-size: 1.1rem; font-weight: 800; line-height: 1.35; min-height: 3.2em;
+  }
+  .bubble::before {
+    content: ""; position: absolute; left: -11px; top: 16px; width: 16px; height: 16px; background: inherit;
+    border-left: 3px solid var(--outline); border-bottom: 3px solid var(--outline); transform: rotate(45deg);
+  }
+  .bubble.good { background: color-mix(in srgb, var(--good) 22%, var(--card)); }
+  .bubble.bad { background: color-mix(in srgb, var(--bad) 20%, var(--card)); }
+
+  /* Fact cards */
+  .facts { display: flex; flex-direction: column; gap: 18px; }
+  .fact {
+    --tc: var(--ca); position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch;
+    background: color-mix(in srgb, var(--tc) 30%, var(--card)); border: 4px solid var(--outline); border-radius: 22px;
+    box-shadow: 0 7px 0 var(--outline); transition: transform .15s, box-shadow .15s;
+  }
+  .fact:nth-child(2) { --tc: var(--cb); }
+  .fact:nth-child(3) { --tc: var(--cc); }
+  @media (prefers-reduced-motion: no-preference) {
+    .fact { animation: rise .45s backwards; }
+    .fact:nth-child(2) { animation-delay: .08s; }
+    .fact:nth-child(3) { animation-delay: .16s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(22px); } }
+  }
+  .fact.open:hover { transform: translateY(-3px) rotate(-.4deg); box-shadow: 0 10px 0 var(--outline); }
+  .pick {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 16px 12px 16px 16px; cursor: pointer; min-width: 0;
+  }
+  .pick:focus-visible, .speak:focus-visible, .btn:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  .pick:disabled, .pick[aria-disabled="true"] { cursor: default; }
+  .letter {
+    flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--card); border: 3px solid var(--outline);
+    display: grid; place-items: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--fg);
+  }
+  .ftext { font-size: clamp(1.1rem, 3.3vw, 1.3rem); font-weight: 800; line-height: 1.4; color: var(--fg); }
+  .speak {
+    align-self: start; margin: 12px 12px 0 0; width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--outline);
+    background: var(--btn); color: var(--btn-fg); font-size: 1.1rem; cursor: pointer; box-shadow: 0 3px 0 var(--outline);
+  }
+  .speak:active { transform: translateY(3px); box-shadow: 0 0 0 var(--outline); }
+  .why { grid-column: 1 / -1; margin: 0; padding: 0 18px 16px 78px; font-size: 1.02rem; font-weight: 600; line-height: 1.45; color: var(--fg); }
+  .why[hidden] { display: none; }
+  .sticker {
+    position: absolute; top: -16px; right: 62px; padding: .1em .75em; border: 3px solid var(--outline); border-radius: 999px;
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--on-bright); transform: rotate(5deg); box-shadow: 0 3px 0 var(--outline);
+  }
+  .sticker[hidden] { display: none; }
+  .sticker.lie { background: #ff9a90; }
+  .sticker.true { background: #6be8b0; }
+  .fact.pickedRight { box-shadow: 0 7px 0 var(--outline), 0 0 0 6px var(--good); }
+  .fact.pickedWrong { box-shadow: 0 7px 0 var(--outline), 0 0 0 6px var(--bad); }
+  @media (prefers-reduced-motion: no-preference) { .fact.pickedWrong { animation: shake .45s; } @keyframes shake { 20% { translate: -7px 0; } 40% { translate: 7px 0; } 60% { translate: -4px 0; } 80% { translate: 3px 0; } } }
+  @media (max-width: 480px) { .why { padding-left: 18px; } .letter { width: 40px; height: 40px; font-size: 1.25rem; } }
+
+  /* Buttons */
+  .row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 56px; }
+  .btn {
+    font: 800 1.15rem/1 'Baloo 2', sans-serif; padding: .8em 1.5em; border-radius: 999px; border: 3px solid var(--outline);
+    background: var(--btn); color: var(--btn-fg); box-shadow: 0 5px 0 var(--outline); cursor: pointer; transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--outline); }
+  .btn.primary { background: var(--accent); color: var(--on-bright); }
+  .btn[hidden] { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn.primary:not([hidden]) { animation: glow 1.1s ease-in-out infinite; }
+    @keyframes glow { 50% { box-shadow: 0 5px 0 var(--outline), 0 0 0 7px color-mix(in srgb, var(--accent) 40%, transparent); } }
+  }
+
+  /* Result */
+  .result { text-align: center; background: var(--card); border: 4px solid var(--outline); border-radius: 28px; box-shadow: 0 8px 0 var(--outline); padding: 28px 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .result[hidden] { display: none; }
+  .r-emoji { font-size: 5rem; line-height: 1; }
+  @media (prefers-reduced-motion: no-preference) { .r-emoji { animation: hop 1.2s ease-in-out infinite; } }
+  .r-title { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(2rem, 8vw, 3rem); line-height: 1.1; }
+  .r-score { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.4rem; }
+  .r-score b { color: var(--accent); font-size: 2.2rem; }
+
+  .confetti { position: fixed; top: -14px; z-index: 99; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity: .9; } }
+</style>
+
+<main class="wrap">
+  <header class="hero">
+    <h1 id="title" aria-label="Two Truths and a Lie"></h1>
+    <p class="sub">Two facts are true. One is a fib. Can you find it?</p>
+  </header>
+
+  <ol class="stamps" id="stamps" aria-label="Passport"></ol>
+
+  <section id="game" class="wrap" style="gap:18px">
+    <div class="postcard">
+      <span class="flag" id="flag" aria-hidden="true"></span>
+      <div class="where"><small id="roundNo"></small><strong id="country"></strong></div>
+      <div class="score"><span id="score">0</span><small>Fibs found</small></div>
+    </div>
+
+    <div class="fox">
+      <div class="fox-face" id="foxFace" aria-hidden="true">🦊</div>
+      <p class="bubble" id="bubble" aria-live="polite"></p>
+    </div>
+
+    <div class="facts" id="facts"></div>
+
+    <div class="row"><button class="btn primary" id="next" type="button" hidden>Next country ▶</button></div>
+  </section>
+
+  <section class="result" id="result" hidden>
+    <div class="r-emoji" id="rEmoji" aria-hidden="true">🏆</div>
+    <h2 class="r-title" id="rTitle"></h2>
+    <p class="r-score">You found <b id="rScore"></b> fibs!</p>
+    <button class="btn primary" id="again" type="button">↺ Play again</button>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Title */
+  (function () {
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43'], n = 0, h1 = $('#title');
+    ['Two', 'Truths', '&', 'a', 'Lie'].forEach(function (w) {
+      var word = document.createElement('span'); word.className = 'word'; word.setAttribute('aria-hidden', 'true');
+      w.split('').forEach(function (ch) {
+        var s = document.createElement('span'); s.className = 'ltr'; s.textContent = ch; s.style.color = cols[n % cols.length];
+        s.style.setProperty('--r', ((n % 2 ? -1 : 1) * (2 + (n % 3) * 1.5)) + 'deg'); s.style.setProperty('--d', (n * 0.09) + 's');
+        word.appendChild(s); n++;
+      });
+      h1.appendChild(word);
+    });
+  })();
+
+  /* Data: every fact says whether it is the lie and why */
+  var DATA = [
+    { country: 'Japan', flag: '🇯🇵', facts: [
+      { t: 'Japan has about 4 million vending machines.', lie: false, why: 'True! That is about one machine for every 30 people.' },
+      { t: 'In Japan, it is polite to slurp your noodles loudly.', lie: false, why: 'True! Slurping shows you enjoy the food.' },
+      { t: 'In Japan, people eat fried chicken for Christmas dinner, but only in summer.', lie: true, why: 'A fib! Christmas is in winter. Many families eat fried chicken (often from KFC) at Christmas.' } ] },
+    { country: 'Australia', flag: '🇦🇺', facts: [
+      { t: 'Australia has more kangaroos than people.', lie: false, why: 'True! There are about 50 million kangaroos and about 26 million people.' },
+      { t: 'In Australia, it is illegal to name your pet crocodile.', lie: true, why: 'A fib! You can give a pet crocodile any name you like.' },
+      { t: 'In some parts of Australia, there are more camels than people.', lie: false, why: 'True! Australia has the biggest wild camel population in the world.' } ] },
+    { country: 'Iceland', flag: '🇮🇸', facts: [
+      { t: 'Iceland has no mosquitoes.', lie: false, why: 'True! Iceland is one of the few places in the world with no mosquitoes.' },
+      { t: 'In Iceland, there is a phone app to check if you are related to your date.', lie: false, why: 'True! It is a real app that helps people check their family tree.' },
+      { t: 'Iceland is covered in ice all year round, so it never gets warm.', lie: true, why: 'A fib! Iceland has green summers. The name is a bit of a trick!' } ] },
+    { country: 'Brazil', flag: '🇧🇷', facts: [
+      { t: 'Brazil has the longest river in the world.', lie: true, why: 'A fib! The Nile in Africa is usually called the longest. Brazil has the Amazon, the river with the most water.' },
+      { t: 'In Brazil, there is a city where it rains almost every day.', lie: false, why: 'True! In Belém, it rains almost every afternoon.' },
+      { t: 'Brazil has more than 4,000 airports.', lie: false, why: 'True! Only the USA has more airports than Brazil.' } ] },
+    { country: 'The United Kingdom', flag: '🇬🇧', facts: [
+      { t: 'In the UK, Big Ben is the name of a bell, not a tower.', lie: false, why: 'True! Big Ben is the big bell inside the clock tower.' },
+      { t: 'In Wales, there is a village with a name that has 58 letters.', lie: false, why: 'True! People call it Llanfair PG for short.' },
+      { t: 'In the UK, all horses must wear a hat on Sundays.', lie: true, why: 'A fib! Horses do not need hats on Sundays. That would be funny!' } ] },
+    { country: 'Canada', flag: '🇨🇦', facts: [
+      { t: 'Canada has more lakes than any other country.', lie: false, why: 'True! Canada has millions of lakes.' },
+      { t: 'Canada has the longest coastline in the world.', lie: false, why: 'True! Canada touches three oceans.' },
+      { t: 'In Canada, it is illegal to eat ice cream in winter.', lie: true, why: 'A fib! Canadians eat ice cream all year, even when it is -30°C!' } ] },
+    { country: 'India', flag: '🇮🇳', facts: [
+      { t: 'India has a temple covered in real gold.', lie: false, why: 'True! The Golden Temple in Amritsar is covered in gold.' },
+      { t: 'In India, there is a post office that floats on water.', lie: false, why: 'True! It floats on Dal Lake in Kashmir.' },
+      { t: 'In India, it is illegal to smile at monkeys.', lie: true, why: 'A fib! You can smile at monkeys. They might smile back!' } ] },
+    { country: 'France', flag: '🇫🇷', facts: [
+      { t: 'In France, you can marry a person who has died, with special permission.', lie: false, why: 'True! France allows this in special cases.' },
+      { t: 'France is the most visited country in the world.', lie: false, why: 'True! About 100 million visitors come every year.' },
+      { t: 'In France, it is illegal to name a pig "Napoleon."', lie: true, why: 'A fib! You can name a pig Napoleon. Some people might not like it!' } ] }
+  ];
+  var LETTERS = ['A', 'B', 'C'];
+
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  var deck, ri, score, answered, results, hopTimer;
+  var els = { stamps: $('#stamps'), flag: $('#flag'), country: $('#country'), roundNo: $('#roundNo'), score: $('#score'), bubble: $('#bubble'),
+    fox: $('#foxFace'), facts: $('#facts'), next: $('#next'), game: $('#game'), result: $('#result') };
+
+  function say(text, kind) { els.bubble.className = 'bubble ' + (kind || ''); els.bubble.textContent = text; }
+  function hop(cls) { els.fox.className = 'fox-face'; void els.fox.offsetWidth; els.fox.className = 'fox-face ' + cls; }
+
+  function confetti() {
+    if (reduced) return;
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43', '#7bd957'];
+    for (var i = 0; i < 70; i++) {
+      var c = document.createElement('div'); c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % cols.length];
+      c.style.width = (6 + Math.random() * 8) + 'px'; c.style.height = (8 + Math.random() * 10) + 'px';
+      c.style.borderRadius = Math.random() > .5 ? '50%' : '3px';
+      c.style.animationDuration = (2 + Math.random() * 2) + 's'; c.style.animationDelay = (Math.random() * .4) + 's';
+      document.body.appendChild(c); setTimeout(function (el) { el.remove(); }.bind(null, c), 4800);
+    }
+  }
+
+  function speak(text) {
+    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {}
+  }
+
+  function renderStamps() {
+    els.stamps.innerHTML = '';
+    deck.forEach(function (r, i) {
+      var li = document.createElement('li');
+      var state = results[i] === true ? ' right' : results[i] === false ? ' wrong' : '';
+      li.className = 'stamp' + (i === ri && results[i] === undefined ? ' now' : '') + state;
+      li.innerHTML = '<span aria-hidden="true">' + r.flag + '</span><span class="mark" aria-hidden="true">' + (results[i] === true ? '✓' : results[i] === false ? '✕' : '') + '</span>';
+      li.setAttribute('aria-label', r.country + (results[i] === true ? ', found the fib' : results[i] === false ? ', missed the fib' : ''));
+      els.stamps.appendChild(li);
+    });
+  }
+
+  function renderRound() {
+    var r = deck[ri]; answered = false;
+    els.flag.textContent = r.flag; els.country.textContent = r.country;
+    els.roundNo.textContent = 'Country ' + (ri + 1) + ' of ' + deck.length;
+    els.score.textContent = score;
+    els.next.hidden = true;
+    els.fox.className = 'fox-face';
+    say('Two facts are true. One is a fib! Tap the fib.', '');
+    els.facts.innerHTML = '';
+    r.facts.forEach(function (f, i) {
+      var card = document.createElement('div'); card.className = 'fact open';
+      card.innerHTML = '<button class="pick" type="button"><span class="letter" aria-hidden="true">' + LETTERS[i] + '</span><span class="ftext"></span></button>' +
+        '<button class="speak" type="button" aria-label="Listen to fact ' + LETTERS[i] + '">🔊</button>' +
+        '<span class="sticker" hidden></span><p class="why" hidden></p>';
+      card.querySelector('.ftext').textContent = f.t;
+      card.querySelector('.pick').setAttribute('aria-label', 'Fact ' + LETTERS[i] + ': ' + f.t);
+      card.querySelector('.pick').addEventListener('click', function () { answer(i); });
+      if (!('speechSynthesis' in window)) card.querySelector('.speak').hidden = true;
+      else card.querySelector('.speak').addEventListener('click', function () { speak(f.t); });
+      els.facts.appendChild(card);
+    });
+    renderStamps();
+  }
+
+  function answer(pi) {
+    if (answered) return; answered = true;
+    var r = deck[ri], picked = r.facts[pi], right = picked.lie, lieAt = 0;
+    r.facts.forEach(function (f, i) { if (f.lie) lieAt = i; });
+    results[ri] = right; if (right) score++;
+    els.score.textContent = score;
+    Array.prototype.forEach.call(els.facts.children, function (card, i) {
+      var f = r.facts[i], st = card.querySelector('.sticker'), why = card.querySelector('.why');
+      card.classList.remove('open'); card.querySelector('.pick').setAttribute('aria-disabled', 'true');
+      st.hidden = false; st.className = 'sticker ' + (f.lie ? 'lie' : 'true'); st.textContent = f.lie ? (i === pi ? '🎯 FIB!' : 'FIB!') : 'TRUE ✓';
+      why.hidden = false; why.textContent = f.why;
+      if (i === pi) card.classList.add(right ? 'pickedRight' : 'pickedWrong');
+    });
+    els.facts.querySelectorAll('.pick').forEach(function (p) { p.tabIndex = -1; });
+    if (right) { say('Yes! You found the fib! Great job!', 'good'); hop('hop'); confetti(); }
+    else { say('Oops! That one is true. The fib is card ' + LETTERS[lieAt] + '.', 'bad'); hop('tilt'); }
+    els.next.textContent = ri < deck.length - 1 ? 'Next country ▶' : 'See my score ▶';
+    els.next.hidden = false;
+    try { els.next.focus({ preventScroll: true }); } catch (e) {}
+    renderStamps();
+  }
+
+  function finish() {
+    els.game.hidden = true; els.result.hidden = false;
+    var n = deck.length, e, t;
+    if (score === n) { e = '🏆'; t = 'Super Detective!'; }
+    else if (score >= n * 0.75) { e = '🌟'; t = 'Fib Finder!'; }
+    else if (score >= n * 0.5) { e = '🧭'; t = 'Good Explorer!'; }
+    else { e = '🗺️'; t = 'Keep Exploring!'; }
+    $('#rEmoji').textContent = e; $('#rTitle').textContent = t; $('#rScore').textContent = score + ' of ' + n;
+    if (score >= n * 0.75) { confetti(); setTimeout(confetti, 700); }
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  }
+
+  function newGame() {
+    deck = shuffle(DATA).map(function (r) { return { country: r.country, flag: r.flag, facts: shuffle(r.facts) }; });
+    ri = 0; score = 0; results = [];
+    els.result.hidden = true; els.game.hidden = false;
+    renderRound();
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  }
+
+  els.next.addEventListener('click', function () {
+    if (ri < deck.length - 1) { ri++; renderRound(); window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); }
+    else finish();
+  });
+  $('#again').addEventListener('click', newGame);
+  newGame();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,410 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Past Simple Story Builder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: sticker title, then two columns (verb card, lined writing paper and helper on the left, the growing story on the right). Phones stack them. */
+  :root {
+    --sky1: #7fcfff;
+    --sky2: #dff4ff;
+    --card: #ffffff;
+    --fg: #2a2a5a;
+    --outline: #2a2a5a;
+    --accent: #ff5d8f;
+    --butter: #ffe066;
+    --mint: #7ee0a8;
+    --on-bright: #2a2a5a;
+    --good: #14815a;
+    --bad: #c93a2f;
+    --btn: #ffffff;
+    --btn-fg: #2a2a5a;
+    --focus: #6c5ce7;
+    --soft: rgba(42, 42, 90, .64);
+    --mark: #ffe066;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+      --accent: #ff7aa6; --btn: #3b3689; --btn-fg: #f1eeff; --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+      --good: #6be8b0; --bad: #ff9a90; --mark: #8a6d00;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+    --accent: #ff7aa6; --btn: #3b3689; --btn-fg: #f1eeff; --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+    --good: #6be8b0; --bad: #ff9a90; --mark: #8a6d00;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background-color: var(--sky2);
+    background-image: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 420px);
+    background-repeat: no-repeat;
+    color: var(--fg);
+    font-family: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
+    font-weight: 600;
+    padding-block: 22px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  [hidden] { display: none !important; }
+
+  /* Title */
+  .hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  h1 {
+    margin: 0; font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; font-weight: 800;
+    font-size: clamp(2.1rem, 7vw, 4rem); line-height: 1.05; display: flex; flex-wrap: wrap; justify-content: center; column-gap: .3em;
+  }
+  .word { display: inline-flex; }
+  .ltr {
+    display: inline-block; -webkit-text-stroke: .2em var(--outline); paint-order: stroke fill;
+    text-shadow: 0 .08em 0 var(--outline); transform: rotate(var(--r, 0deg));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ltr { animation: bob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+    @keyframes bob { 50% { transform: translateY(-.09em) rotate(calc(var(--r, 0deg) * -1)); } }
+  }
+  .sub {
+    margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem;
+    background: var(--card); border: 3px solid var(--outline); border-radius: 999px; padding: .2em 1em; box-shadow: 0 4px 0 var(--outline);
+  }
+
+  .stage { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 940px) { .stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+  /* Verb card */
+  .verbcard {
+    background: var(--card); border: 4px solid var(--outline); border-radius: 30px; box-shadow: 0 8px 0 var(--outline);
+    padding: 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; transform: rotate(-.6deg);
+  }
+  @media (prefers-reduced-motion: no-preference) { .verbcard.pop { animation: pop .5s cubic-bezier(.34, 1.56, .64, 1); } @keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.94) rotate(-.6deg); } } }
+  .vemoji {
+    width: 104px; height: 104px; border-radius: 50%; background: var(--butter); border: 4px solid var(--outline);
+    display: grid; place-items: center; font-size: 3.6rem; line-height: 1; box-shadow: 0 5px 0 var(--outline);
+  }
+  .vtext { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .vlabel { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .9rem; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); }
+  .vbase { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1.05; overflow-wrap: anywhere; }
+  .vpast { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--soft); }
+  .vpast .blank { display: inline-block; min-width: 4.5em; text-align: center; border-bottom: 4px dotted var(--outline); color: var(--fg); font-weight: 800; }
+  .vpast .blank.show { background: var(--mark); border-bottom-style: solid; border-radius: 8px; padding: 0 .4em; color: var(--fg); }
+  @media (max-width: 420px) { .verbcard { grid-template-columns: 1fr; justify-items: center; text-align: center; } .vemoji { width: 88px; height: 88px; font-size: 3rem; } }
+
+  /* Writing paper */
+  .starters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .starters span { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .95rem; color: var(--soft); }
+  .chip {
+    font: 800 1rem/1 'Baloo 2', sans-serif; padding: .5em .9em; border-radius: 999px; border: 3px solid var(--outline);
+    background: var(--butter); color: var(--on-bright); cursor: pointer; box-shadow: 0 3px 0 var(--outline);
+  }
+  .chip:active { transform: translateY(3px); box-shadow: none; }
+  textarea.paper {
+    width: 100%; min-height: 148px; resize: vertical; display: block; padding: 4px 18px 0 22px; font: 700 1.3rem/36px 'Nunito', sans-serif; color: var(--fg);
+    background-color: var(--card);
+    background-image: repeating-linear-gradient(transparent 0 35px, color-mix(in srgb, var(--outline) 28%, transparent) 35px 36px);
+    background-position: 0 4px; background-attachment: local;
+    border: 4px solid var(--outline); border-radius: 22px; box-shadow: 0 6px 0 var(--outline);
+  }
+  textarea.paper::placeholder { color: var(--soft); font-weight: 600; }
+  textarea.paper:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) { textarea.paper.shake { animation: shake .4s; } @keyframes shake { 20% { translate: -7px 0; } 40% { translate: 7px 0; } 60% { translate: -4px 0; } 80% { translate: 3px 0; } } }
+
+  /* Buttons */
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    font: 800 1.1rem/1 'Baloo 2', sans-serif; padding: .8em 1.3em; border-radius: 999px; border: 3px solid var(--outline);
+    background: var(--btn); color: var(--btn-fg); box-shadow: 0 5px 0 var(--outline); cursor: pointer; transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--outline); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: translateY(4px); box-shadow: 0 1px 0 var(--outline); }
+  .btn.primary { background: var(--accent); color: var(--on-bright); flex: 1 1 180px; }
+  .btn.small { font-size: .95rem; padding: .6em 1em; }
+  .btn:focus-visible, .chip:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+
+  /* Owl */
+  .owl { display: flex; align-items: flex-start; gap: 12px; }
+  .owl-face {
+    flex: none; width: 62px; height: 62px; border-radius: 50%; background: var(--butter); border: 4px solid var(--outline);
+    display: grid; place-items: center; font-size: 2rem; box-shadow: 0 4px 0 var(--outline);
+  }
+  .owl-face.hop { animation: hop .6s; }
+  @keyframes hop { 30% { transform: translateY(-14px) rotate(-8deg); } 60% { transform: translateY(0) rotate(6deg); } }
+  @media (prefers-reduced-motion: reduce) { .owl-face.hop { animation: none; } }
+  .bubble {
+    position: relative; margin: 6px 0 0; flex: 1; min-width: 0; background: var(--card); border: 3px solid var(--outline);
+    border-radius: 18px; padding: 10px 14px; font-size: 1.1rem; font-weight: 800; line-height: 1.4; min-height: 3.2em;
+  }
+  .bubble::before {
+    content: ""; position: absolute; left: -11px; top: 16px; width: 16px; height: 16px; background: inherit;
+    border-left: 3px solid var(--outline); border-bottom: 3px solid var(--outline); transform: rotate(45deg);
+  }
+  .bubble.good { background: color-mix(in srgb, var(--good) 22%, var(--card)); }
+  .bubble.bad { background: color-mix(in srgb, var(--bad) 20%, var(--card)); }
+
+  /* Story book */
+  .book { background: var(--card); border: 4px solid var(--outline); border-radius: 30px; box-shadow: 0 8px 0 var(--outline); padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .book-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .book-title { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.7rem; line-height: 1; }
+  .count { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .95rem; background: var(--butter); color: var(--on-bright); border: 3px solid var(--outline); border-radius: 999px; padding: .15em .8em; }
+  .tools { display: flex; gap: 10px; flex-wrap: wrap; }
+  .confirm { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border: 3px solid var(--outline); border-radius: 18px; background: color-mix(in srgb, var(--bad) 20%, var(--card)); font-weight: 800; }
+  .pages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .page {
+    position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px 14px 12px; border: 3px solid var(--outline); border-radius: 20px;
+    background: color-mix(in srgb, var(--butter) 18%, var(--card)); transform: rotate(var(--r, 0deg)); box-shadow: 0 4px 0 var(--outline);
+  }
+  @media (prefers-reduced-motion: no-preference) { .page.new { animation: pop .5s cubic-bezier(.34, 1.56, .64, 1); } }
+  .pno { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--outline); background: var(--accent); color: var(--on-bright); display: grid; place-items: center; font: 800 1.15rem/1 'Baloo 2', sans-serif; }
+  .ptext { margin: 0; font-size: clamp(1.15rem, 3.4vw, 1.3rem); font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; }
+  .ptext mark { background: var(--mark); color: var(--fg); border-radius: 8px; padding: 0 .25em; box-shadow: 0 .1em 0 var(--outline); }
+  .ptag { margin: 6px 0 0; font-size: .92rem; font-weight: 800; color: var(--soft); }
+  .pemoji { position: absolute; right: 10px; top: -14px; width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--outline); background: var(--card); display: grid; place-items: center; font-size: 1.4rem; transform: rotate(8deg); }
+  .empty { text-align: center; padding: 26px 8px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem; line-height: 1.4; color: var(--soft); }
+  .empty b { display: block; font-size: 3rem; line-height: 1.1; }
+
+  .confetti { position: fixed; top: -14px; z-index: 99; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity: .9; } }
+</style>
+
+<main class="wrap">
+  <header class="hero">
+    <h1 id="title" aria-label="Past Simple Story Builder"></h1>
+    <p class="sub">Take a verb. Write a sentence. Build a story!</p>
+  </header>
+
+  <div class="stage">
+    <section class="col" aria-label="Write">
+      <div class="verbcard pop" id="verbcard">
+        <div class="vemoji" id="vemoji" aria-hidden="true"></div>
+        <div class="vtext">
+          <span class="vlabel">Your verb</span>
+          <span class="vbase" id="vbase"></span>
+          <span class="vpast">Past: <span class="blank" id="vpast">? ? ?</span></span>
+        </div>
+      </div>
+
+      <div class="starters" id="starters"><span>Start with:</span></div>
+      <label for="sentence" class="vlabel" style="margin-bottom:-8px">Write your sentence</label>
+      <textarea id="sentence" class="paper" placeholder="Yesterday, I ..." spellcheck="true" autocomplete="off"></textarea>
+
+      <div class="row">
+        <button class="btn primary" id="add" type="button">＋ Add to story</button>
+        <button class="btn" id="hint" type="button">💡 Help</button>
+        <button class="btn" id="skip" type="button">↻ New verb</button>
+      </div>
+
+      <div class="owl">
+        <div class="owl-face" id="owlFace" aria-hidden="true">🦉</div>
+        <p class="bubble" id="bubble" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="book" aria-label="Our story">
+      <div class="book-top">
+        <h2 class="book-title">Our Story</h2>
+        <span class="count" id="count">0 pages</span>
+      </div>
+      <div class="tools">
+        <button class="btn small" id="read" type="button">🔊 Read my story</button>
+        <button class="btn small" id="newStory" type="button">⟲ New story</button>
+      </div>
+      <div class="confirm" id="confirm" hidden>
+        <span>Throw this story away?</span>
+        <button class="btn small" id="yes" type="button">Yes, start new</button>
+        <button class="btn small" id="no" type="button">No, keep it</button>
+      </div>
+      <ol class="pages" id="pages"></ol>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Title */
+  (function () {
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43'], n = 0, h1 = $('#title');
+    ['Past', 'Simple', 'Story', 'Builder'].forEach(function (w) {
+      var word = document.createElement('span'); word.className = 'word'; word.setAttribute('aria-hidden', 'true');
+      w.split('').forEach(function (ch) {
+        var s = document.createElement('span'); s.className = 'ltr'; s.textContent = ch; s.style.color = cols[n % cols.length];
+        s.style.setProperty('--r', ((n % 2 ? -1 : 1) * (2 + (n % 3) * 1.5)) + 'deg'); s.style.setProperty('--d', (n * 0.09) + 's');
+        word.appendChild(s); n++;
+      });
+      h1.appendChild(word);
+    });
+  })();
+
+  var VERBS = [
+    ['wake up', 'woke up', '⏰'], ['eat', 'ate', '🍎'], ['go', 'went', '🚶'], ['see', 'saw', '👀'], ['find', 'found', '🔍'], ['run', 'ran', '🏃'],
+    ['take', 'took', '🎒'], ['give', 'gave', '🎁'], ['make', 'made', '🧁'], ['meet', 'met', '🤝'], ['buy', 'bought', '🛍️'], ['think', 'thought', '💭'],
+    ['come', 'came', '👋'], ['say', 'said', '💬'], ['tell', 'told', '🗣️'], ['drink', 'drank', '🥤'], ['sleep', 'slept', '😴'], ['write', 'wrote', '✏️'],
+    ['read', 'read', '📖'], ['sing', 'sang', '🎤'], ['dance', 'danced', '💃'], ['jump', 'jumped', '🤸'], ['walk', 'walked', '🐾'], ['open', 'opened', '🚪'],
+    ['close', 'closed', '🔒'], ['start', 'started', '🏁'], ['finish', 'finished', '🏆'], ['help', 'helped', '🤲'], ['want', 'wanted', '🌟'], ['need', 'needed', '💧'],
+    ['look', 'looked', '🔭'], ['listen', 'listened', '👂'], ['call', 'called', '📞'], ['laugh', 'laughed', '😂'], ['cry', 'cried', '😢'], ['smile', 'smiled', '😊'],
+    ['shout', 'shouted', '📢'], ['whisper', 'whispered', '🤫'], ['climb', 'climbed', '🧗'], ['swim', 'swam', '🏊'], ['fly', 'flew', '✈️'], ['drive', 'drove', '🚗'],
+    ['ride', 'rode', '🚲'], ['catch', 'caught', '⚾'], ['throw', 'threw', '🥎'], ['build', 'built', '🧱'], ['break', 'broke', '🔨'], ['fix', 'fixed', '🔧'],
+    ['clean', 'cleaned', '🧹'], ['cook', 'cooked', '🍳']
+  ].map(function (v) { return { base: v[0], past: v[1], emoji: v[2] }; });
+  var STARTERS = ['Yesterday, I', 'Last night, we', 'My dog', 'Our teacher', 'Last weekend, my friend'];
+
+  var els = { vemoji: $('#vemoji'), vbase: $('#vbase'), vpast: $('#vpast'), card: $('#verbcard'), input: $('#sentence'), add: $('#add'), hint: $('#hint'), skip: $('#skip'),
+    bubble: $('#bubble'), owl: $('#owlFace'), pages: $('#pages'), count: $('#count'), read: $('#read'), newStory: $('#newStory'), confirm: $('#confirm') };
+  var cur = null, story = [], used = {}, tries = 0, busy = false, touched = false;
+
+  function say(t, kind) { els.bubble.className = 'bubble ' + (kind || ''); els.bubble.textContent = t; }
+  function hop() { els.owl.className = 'owl-face'; void els.owl.offsetWidth; els.owl.className = 'owl-face hop'; }
+  function shake() { els.input.classList.remove('shake'); void els.input.offsetWidth; els.input.classList.add('shake'); }
+
+  function confetti(n) {
+    if (reduced) return;
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43', '#7bd957'];
+    for (var i = 0; i < n; i++) {
+      var c = document.createElement('div'); c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % cols.length];
+      c.style.width = (6 + Math.random() * 7) + 'px'; c.style.height = (8 + Math.random() * 9) + 'px'; c.style.borderRadius = Math.random() > .5 ? '50%' : '3px';
+      c.style.animationDuration = (1.8 + Math.random() * 1.6) + 's'; c.style.animationDelay = (Math.random() * .3) + 's';
+      document.body.appendChild(c); setTimeout(function (el) { el.remove(); }.bind(null, c), 4200);
+    }
+  }
+
+  /* Starters */
+  STARTERS.forEach(function (s) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = s;
+    b.addEventListener('click', function () {
+      var v = els.input.value;
+      els.input.value = v.trim() ? v : s + ' ';
+      els.input.focus(); els.input.setSelectionRange(els.input.value.length, els.input.value.length);
+    });
+    $('#starters').appendChild(b);
+  });
+
+  /* Verbs */
+  function pickVerb() {
+    var avail = VERBS.filter(function (v) { return !used[v.base]; });
+    if (!avail.length) { used = {}; avail = VERBS; }
+    var v = avail[Math.floor(Math.random() * avail.length)];
+    used[v.base] = true; return v;
+  }
+  function loadVerb(msg) {
+    cur = pickVerb(); tries = 0; busy = false;
+    els.vemoji.textContent = cur.emoji; els.vbase.textContent = cur.base;
+    els.vpast.textContent = '? ? ?'; els.vpast.className = 'blank';
+    els.card.className = 'verbcard'; void els.card.offsetWidth; els.card.className = 'verbcard pop';
+    els.input.value = ''; els.add.disabled = false; els.skip.disabled = false; els.hint.disabled = false;
+    say(msg || 'Use the verb in a sentence about the past. Add a time word, like "yesterday".', '');
+    if (touched) els.input.focus({ preventScroll: true });
+  }
+  function showPast() { els.vpast.textContent = cur.past; els.vpast.className = 'blank show'; }
+
+  /* Checking */
+  function norm(s) { return ' ' + s.toLowerCase().replace(/[’‘`]/g, "'").replace(/[^a-z' ]+/g, ' ').replace(/\s+/g, ' ').trim() + ' '; }
+  function has(n, p) { return n.indexOf(' ' + p + ' ') !== -1; }
+  function regularForms(head) {
+    var f = [head + 'ed', head + 'd'];
+    if (/[^aeiou]y$/.test(head)) f.push(head.slice(0, -1) + 'ied');
+    if (/[^aeiou][aeiou][^aeiouwy]$/.test(head)) f.push(head + head.slice(-1) + 'ed');
+    return f;
+  }
+  function check(text, v) {
+    var n = norm(text), baseHead = v.base.split(' ')[0], pastHead = v.past.split(' ')[0], multi = v.base.indexOf(' ') !== -1;
+    if (has(n, v.past)) return { ok: true, form: v.past };
+    if (multi && has(n, pastHead)) return { ok: true, form: pastHead };
+    var hasNeg = n.indexOf(" didn't ") !== -1 || n.indexOf(' didnt ') !== -1 || n.indexOf(' did not ') !== -1;
+    if (hasNeg && (has(n, v.base) || has(n, baseHead))) return { ok: true, form: v.base, neg: true };
+    if (v.past === v.base && has(n, v.base)) return { ok: true, form: v.base };
+    if (has(n, v.base) || has(n, baseHead)) return { ok: false, why: 'base' };
+    var words = n.trim().split(' '), reg = regularForms(baseHead);
+    for (var i = 0; i < words.length; i++) if (reg.indexOf(words[i]) !== -1 && words[i] !== pastHead) return { ok: false, why: 'wrong', found: words[i] };
+    return { ok: false, why: 'none' };
+  }
+
+  function addSentence() {
+    if (busy || !cur) return;
+    var text = els.input.value.trim();
+    if (!text) { say('Write a sentence first. You can tap a starter above to begin.', 'bad'); shake(); els.input.focus(); return; }
+    if (text.split(/\s+/).length < 3) { say('Make it a little longer. Use at least three words.', 'bad'); shake(); return; }
+    var r = check(text, cur);
+    if (r.ok) {
+      busy = true; els.add.disabled = els.skip.disabled = els.hint.disabled = true;
+      story.push({ text: text, verb: cur, form: r.form });
+      renderStory(true); showPast(); hop(); confetti(28);
+      say(r.neg ? 'Great! After "didn\'t" we use the base verb. Your sentence is on a new page!' : 'Great! "' + r.form + '" is right. Your sentence is on a new page!', 'good');
+      setTimeout(function () { loadVerb(); }, 1500);
+    } else {
+      tries++; shake();
+      var msg;
+      if (r.why === 'base') msg = 'You wrote "' + cur.base + '". Yesterday is over, so change the verb to the past.';
+      else if (r.why === 'wrong') msg = '"' + r.found + '" is not right. This verb is irregular, so it changes in a special way.';
+      else msg = 'I cannot find the past of "' + cur.base + '" in your sentence. Try again!';
+      if (tries >= 2) { showPast(); msg += ' Here is the past form.'; }
+      else msg += ' Tap Help if you need it.';
+      say(msg, 'bad');
+    }
+  }
+
+  /* Story */
+  function mark(el, text, forms) {
+    for (var i = 0; i < forms.length; i++) {
+      var f = forms[i], re = new RegExp("(^|[^A-Za-z'])(" + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ")(?![A-Za-z'])", 'i'), m = re.exec(text);
+      if (m) {
+        var s = m.index + m[1].length, mk = document.createElement('mark');
+        mk.textContent = text.substr(s, f.length);
+        el.appendChild(document.createTextNode(text.slice(0, s))); el.appendChild(mk); el.appendChild(document.createTextNode(text.slice(s + f.length)));
+        return;
+      }
+    }
+    el.appendChild(document.createTextNode(text));
+  }
+  function renderStory(animateLast) {
+    els.pages.innerHTML = '';
+    els.count.textContent = story.length + (story.length === 1 ? ' page' : ' pages');
+    els.read.disabled = els.newStory.disabled = !story.length;
+    if (!story.length) {
+      var li = document.createElement('li'); li.className = 'empty';
+      li.innerHTML = '<b aria-hidden="true">📖</b>Your story is empty. Write your first sentence to begin!';
+      els.pages.appendChild(li); return;
+    }
+    story.forEach(function (it, i) {
+      var li = document.createElement('li'); li.className = 'page' + (animateLast && i === story.length - 1 ? ' new' : '');
+      li.style.setProperty('--r', (i % 2 ? .5 : -.6) + 'deg');
+      var no = document.createElement('div'); no.className = 'pno'; no.textContent = i + 1;
+      var body = document.createElement('div'), p = document.createElement('p'); p.className = 'ptext';
+      mark(p, it.text, [it.form, it.verb.past, it.verb.past.split(' ')[0], it.verb.base]);
+      var tag = document.createElement('p'); tag.className = 'ptag'; tag.textContent = it.verb.base + ' → ' + it.verb.past;
+      body.appendChild(p); body.appendChild(tag);
+      var em = document.createElement('span'); em.className = 'pemoji'; em.setAttribute('aria-hidden', 'true'); em.textContent = it.verb.emoji;
+      li.appendChild(no); li.appendChild(body); li.appendChild(em); els.pages.appendChild(li);
+    });
+    if (animateLast) { var last = els.pages.lastElementChild; if (last && last.scrollIntoView) last.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }
+  }
+
+  /* Events */
+  els.add.addEventListener('click', function () { touched = true; addSentence(); });
+  els.input.addEventListener('keydown', function (e) { touched = true; if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); addSentence(); } });
+  els.hint.addEventListener('click', function () { if (cur) { showPast(); say('The past of "' + cur.base + '" is "' + cur.past + '". Use it in your sentence!', ''); } });
+  els.skip.addEventListener('click', function () { if (!busy) { touched = true; loadVerb('Here is a new verb. Write a sentence with it!'); } });
+  els.newStory.addEventListener('click', function () { els.confirm.hidden = false; });
+  $('#no').addEventListener('click', function () { els.confirm.hidden = true; });
+  $('#yes').addEventListener('click', function () { story = []; used = {}; els.confirm.hidden = true; renderStory(false); loadVerb('New story! Write your first sentence.'); });
+  if (!('speechSynthesis' in window)) els.read.hidden = true;
+  else els.read.addEventListener('click', function () {
+    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(story.map(function (s) { return s.text; }).join(' ')); u.lang = 'en-GB'; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {}
+  });
+
+  renderStory(false);
+  loadVerb();
+})();
+</script>
+
+</body></html>

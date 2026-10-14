@@ -1,0 +1,379 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Agree or Disagree</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one centered column. Sticker title, topic and progress dots, a seesaw that tilts with your votes, a speech balloon with the statement, two big vote buttons, then a talk card. */
+  :root {
+    --sky1: #7fcfff;
+    --sky2: #dff4ff;
+    --card: #ffffff;
+    --fg: #2a2a5a;
+    --outline: #2a2a5a;
+    --accent: #ff5d8f;
+    --butter: #ffe066;
+    --on-bright: #2a2a5a;
+    --on-side: #2a2a5a;
+    --btn: #ffffff;
+    --btn-fg: #2a2a5a;
+    --focus: #6c5ce7;
+    --soft: rgba(42, 42, 90, .64);
+    --yes: #7ee0a8;
+    --no: #ff8fab;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+      --accent: #ff7aa6; --btn: #3b3689; --btn-fg: #f1eeff; --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+      --yes: #1f8f65; --no: #c23a69; --on-side: #ffffff;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+    --accent: #ff7aa6; --btn: #3b3689; --btn-fg: #f1eeff; --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+    --yes: #1f8f65; --no: #c23a69; --on-side: #ffffff;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background-color: var(--sky2);
+    background-image: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 420px);
+    background-repeat: no-repeat;
+    color: var(--fg);
+    font-family: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
+    font-weight: 600;
+    padding-block: 22px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  [hidden] { display: none !important; }
+
+  /* Title */
+  .hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  h1 {
+    margin: 0; font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; font-weight: 800;
+    font-size: clamp(2.2rem, 7.5vw, 4rem); line-height: 1.05; display: flex; flex-wrap: wrap; justify-content: center; column-gap: .3em;
+  }
+  .word { display: inline-flex; }
+  .ltr {
+    display: inline-block; -webkit-text-stroke: .2em var(--outline); paint-order: stroke fill;
+    text-shadow: 0 .08em 0 var(--outline); transform: rotate(var(--r, 0deg));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ltr { animation: bob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+    @keyframes bob { 50% { transform: translateY(-.09em) rotate(calc(var(--r, 0deg) * -1)); } }
+  }
+  .sub {
+    margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem;
+    background: var(--card); border: 3px solid var(--outline); border-radius: 999px; padding: .2em 1em; box-shadow: 0 4px 0 var(--outline);
+  }
+
+  /* Topic and dots */
+  .meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .count { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
+  .topic {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--butter); color: var(--on-bright); border: 3px solid var(--outline); border-radius: 999px; padding: .1em .9em; box-shadow: 0 3px 0 var(--outline); transform: rotate(2deg);
+  }
+  .dots { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
+  .dot { height: 16px; border-radius: 999px; border: 3px solid var(--outline); background: var(--card); }
+  .dot.now { background: var(--butter); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent); }
+  .dot.yes { background: var(--yes); }
+  .dot.no { background: var(--no); }
+
+  /* Seesaw */
+  .seesaw { position: relative; height: 96px; display: grid; place-items: end center; }
+  .plank {
+    position: absolute; bottom: 30px; left: 6%; right: 6%; height: 16px; background: var(--butter); border: 3px solid var(--outline); border-radius: 999px;
+    box-shadow: 0 3px 0 var(--outline); transform: rotate(var(--tilt, 0deg)); transition: transform .7s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .plank .end {
+    position: absolute; bottom: 6px; width: 54px; height: 54px; border-radius: 50%; border: 3px solid var(--outline); display: grid; place-items: center; font-size: 1.7rem;
+    transform: rotate(calc(var(--tilt, 0deg) * -1)); transition: transform .7s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .plank .end.l { left: 0; background: var(--yes); }
+  .plank .end.r { right: 0; background: var(--no); }
+  .pivot { width: 54px; height: 36px; background: var(--accent); border: 3px solid var(--outline); clip-path: polygon(50% 0, 100% 100%, 0 100%); margin-bottom: -2px; }
+  .pivot-wrap { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 40px; filter: drop-shadow(0 0 0 var(--outline)); }
+  .pivot-wrap svg { width: 100%; height: 100%; display: block; }
+  @media (prefers-reduced-motion: reduce) { .plank, .plank .end { transition: none; } }
+
+  /* Owl */
+  .owl { display: flex; align-items: flex-start; gap: 12px; }
+  .owl-face {
+    flex: none; width: 62px; height: 62px; border-radius: 50%; background: var(--butter); border: 4px solid var(--outline);
+    display: grid; place-items: center; font-size: 2rem; box-shadow: 0 4px 0 var(--outline);
+  }
+  .owl-face.hop { animation: hop .6s; }
+  @keyframes hop { 30% { transform: translateY(-14px) rotate(-8deg); } 60% { transform: translateY(0) rotate(6deg); } }
+  @media (prefers-reduced-motion: reduce) { .owl-face.hop { animation: none; } }
+  .bubble {
+    position: relative; margin: 6px 0 0; flex: 1; min-width: 0; background: var(--card); border: 3px solid var(--outline);
+    border-radius: 18px; padding: 10px 14px; font-size: 1.1rem; font-weight: 800; line-height: 1.35; min-height: 3.2em;
+  }
+  .bubble::before {
+    content: ""; position: absolute; left: -11px; top: 16px; width: 16px; height: 16px; background: inherit;
+    border-left: 3px solid var(--outline); border-bottom: 3px solid var(--outline); transform: rotate(45deg);
+  }
+
+  /* Statement balloon */
+  .balloon {
+    position: relative; background: var(--card); border: 4px solid var(--outline); border-radius: 36px; box-shadow: 0 8px 0 var(--outline);
+    padding: 30px 24px 26px; text-align: center; transform: rotate(-.5deg);
+  }
+  .balloon::after {
+    content: ""; position: absolute; left: 50%; bottom: -19px; width: 30px; height: 30px; background: var(--card);
+    border-right: 4px solid var(--outline); border-bottom: 4px solid var(--outline); transform: translateX(-50%) rotate(45deg); border-bottom-right-radius: 8px;
+  }
+  @media (prefers-reduced-motion: no-preference) { .balloon.pop { animation: pop .5s cubic-bezier(.34, 1.56, .64, 1); } @keyframes pop { from { opacity: 0; transform: translateY(20px) scale(.94) rotate(-.5deg); } } }
+  .statement { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(1.6rem, 5.4vw, 2.3rem); line-height: 1.25; text-wrap: balance; }
+  .listen {
+    position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--outline);
+    background: var(--btn); color: var(--btn-fg); font-size: 1.1rem; cursor: pointer; box-shadow: 0 3px 0 var(--outline);
+  }
+  .listen:active { transform: translateY(3px); box-shadow: none; }
+
+  /* Vote buttons */
+  .votes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+  .vote {
+    --side: var(--yes); font: 800 clamp(1.3rem, 4.6vw, 1.8rem)/1.1 'Baloo 2', sans-serif; color: var(--fg); cursor: pointer;
+    background: color-mix(in srgb, var(--side) 38%, var(--card)); border: 4px solid var(--outline); border-radius: 26px; box-shadow: 0 8px 0 var(--outline);
+    padding: 16px 8px 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform .1s, box-shadow .1s, opacity .2s;
+  }
+  .vote.no { --side: var(--no); }
+  .vote .big { font-size: clamp(2.2rem, 8vw, 3.2rem); line-height: 1; }
+  .vote small { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .95rem; color: var(--soft); }
+  @media (hover: hover) { .vote:not(:disabled):hover { transform: translateY(-4px) rotate(-1deg); box-shadow: 0 12px 0 var(--outline); } }
+  .vote:not(:disabled):active { transform: translateY(5px); box-shadow: 0 3px 0 var(--outline); }
+  .vote:focus-visible, .btn:focus-visible, .listen:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  .vote:disabled { cursor: default; }
+  .vote.chosen { background: var(--side); color: var(--on-side); transform: translateY(-4px); }
+  .vote.chosen small { color: var(--on-side); }
+  .vote.dim { opacity: .45; }
+
+  /* Talk card */
+  .talk { background: var(--card); border: 4px solid var(--outline); border-radius: 26px; box-shadow: 0 7px 0 var(--outline); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  @media (prefers-reduced-motion: no-preference) { .talk:not([hidden]) { animation: pop .45s cubic-bezier(.34, 1.56, .64, 1); } }
+  .talk h2 { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .95rem; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+  .frame { margin: 0; padding: 12px 16px; border-radius: 18px; border: 3px solid var(--outline); background: color-mix(in srgb, var(--side, var(--yes)) 40%, var(--card)); font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(1.25rem, 4vw, 1.6rem); line-height: 1.3; }
+  .frame.no { --side: var(--no); }
+  .frame u { text-decoration: none; display: inline-block; min-width: 3.5em; border-bottom: 4px dotted var(--outline); }
+  .qs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .qs li { position: relative; padding-left: 30px; font-size: 1.12rem; font-weight: 800; line-height: 1.4; }
+  .qs li::before { content: ""; position: absolute; left: 4px; top: .42em; width: 14px; height: 14px; border-radius: 50%; background: var(--butter); border: 3px solid var(--outline); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* Buttons */
+  .btn {
+    font: 800 1.15rem/1 'Baloo 2', sans-serif; padding: .8em 1.5em; border-radius: 999px; border: 3px solid var(--outline);
+    background: var(--btn); color: var(--btn-fg); box-shadow: 0 5px 0 var(--outline); cursor: pointer; transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--outline); }
+  .btn.primary { background: var(--accent); color: var(--on-bright); }
+  .btn.small { font-size: 1rem; padding: .6em 1.1em; }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn.primary.pulse { animation: glow 1.1s ease-in-out infinite; }
+    @keyframes glow { 50% { box-shadow: 0 5px 0 var(--outline), 0 0 0 7px color-mix(in srgb, var(--accent) 40%, transparent); } }
+  }
+
+  /* Result */
+  .result { text-align: center; background: var(--card); border: 4px solid var(--outline); border-radius: 28px; box-shadow: 0 8px 0 var(--outline); padding: 28px 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .r-emoji { font-size: 5rem; line-height: 1; }
+  @media (prefers-reduced-motion: no-preference) { .r-emoji { animation: hop 1.2s ease-in-out infinite; } }
+  .r-title { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(2rem, 8vw, 3rem); line-height: 1.1; }
+  .r-text { margin: 0; max-width: 32em; font-size: 1.15rem; line-height: 1.5; font-weight: 800; }
+  .tally { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .tally div { min-width: 120px; padding: 12px 18px; border: 3px solid var(--outline); border-radius: 20px; font-family: 'Baloo 2', sans-serif; font-weight: 800; line-height: 1; }
+  .tally .y { background: color-mix(in srgb, var(--yes) 45%, var(--card)); }
+  .tally .n { background: color-mix(in srgb, var(--no) 45%, var(--card)); }
+  .tally b { display: block; font-size: 2.4rem; }
+  .tally span { font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; }
+  @media (max-width: 420px) { .votes { gap: 10px; } .balloon { padding: 28px 16px 24px; } }
+</style>
+
+<main class="wrap">
+  <header class="hero">
+    <h1 id="title" aria-label="Agree or Disagree"></h1>
+    <p class="sub">Pick a side. Say why!</p>
+  </header>
+
+  <section id="game" class="stack">
+    <div class="meta">
+      <span class="count" id="count"></span>
+      <span class="topic" id="topic"></span>
+    </div>
+    <ol class="dots" id="dots" aria-label="Progress"></ol>
+
+    <div class="seesaw" aria-hidden="true">
+      <div class="plank" id="plank"><span class="end l">👍</span><span class="end r">👎</span></div>
+      <div class="pivot-wrap"><svg viewBox="0 0 60 40" preserveAspectRatio="none"><polygon points="30,3 57,37 3,37" fill="var(--accent)" stroke="var(--outline)" stroke-width="3.5" stroke-linejoin="round"/></svg></div>
+    </div>
+
+    <div class="owl">
+      <div class="owl-face" id="owlFace" aria-hidden="true">🦉</div>
+      <p class="bubble" id="bubble" aria-live="polite"></p>
+    </div>
+
+    <div class="balloon pop" id="balloon">
+      <button class="listen" id="listen" type="button" aria-label="Listen to the sentence">🔊</button>
+      <p class="statement" id="statement"></p>
+    </div>
+
+    <div class="votes">
+      <button class="vote yes" id="yes" type="button"><span class="big" aria-hidden="true">👍</span>Agree<small>I think so too</small></button>
+      <button class="vote no" id="no" type="button"><span class="big" aria-hidden="true">👎</span>Disagree<small>I think not</small></button>
+    </div>
+
+    <div class="talk" id="talk" hidden>
+      <h2>Say it out loud</h2>
+      <p class="frame" id="frame"></p>
+      <h2>Talk to your partner</h2>
+      <ul class="qs" id="qs"></ul>
+      <div class="row">
+        <button class="btn small" id="change" type="button">↺ Change my mind</button>
+        <button class="btn primary pulse" id="next" type="button">Next sentence ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result" id="result" hidden>
+    <div class="r-emoji" id="rEmoji" aria-hidden="true">🎤</div>
+    <h2 class="r-title" id="rTitle"></h2>
+    <div class="tally">
+      <div class="y"><b id="rYes">0</b><span>Agreed</span></div>
+      <div class="n"><b id="rNo">0</b><span>Disagreed</span></div>
+    </div>
+    <p class="r-text" id="rText"></p>
+    <button class="btn primary" id="again" type="button">↺ Play again</button>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Title */
+  (function () {
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43'], n = 0, h1 = $('#title');
+    ['Agree', 'or', 'Disagree?'].forEach(function (w) {
+      var word = document.createElement('span'); word.className = 'word'; word.setAttribute('aria-hidden', 'true');
+      w.split('').forEach(function (ch) {
+        var s = document.createElement('span'); s.className = 'ltr'; s.textContent = ch; s.style.color = cols[n % cols.length];
+        s.style.setProperty('--r', ((n % 2 ? -1 : 1) * (2 + (n % 3) * 1.5)) + 'deg'); s.style.setProperty('--d', (n * 0.09) + 's');
+        word.appendChild(s); n++;
+      });
+      h1.appendChild(word);
+    });
+  })();
+
+  var STATEMENTS = [
+    { topic: 'Games', text: 'Kids should play video games every day.', qs: ['Is it fun to play every day?', 'What else could you do instead?', 'How much time is OK?'] },
+    { topic: 'School', text: 'There should be no homework.', qs: ['Does homework help you learn?', 'What would you do with the extra time?', 'Could teachers give less homework?'] },
+    { topic: 'Home', text: 'Kids should choose what the family eats for dinner.', qs: ['What would you choose every night?', 'Would everyone in your family be happy?', 'Who should choose, kids or parents?'] },
+    { topic: 'Money', text: 'Money can buy happiness.', qs: ['What is something money cannot buy?', 'Does a new toy make you happy for a long time?', 'Are you happy when you play with friends?'] },
+    { topic: 'Nature', text: 'One child cannot help the planet.', qs: ['Can you pick up rubbish at the park?', 'What if all the kids in your school do it?', 'What can you do at home to help?'] },
+    { topic: 'Friends', text: 'Friends should share all their toys.', qs: ['Do you share your favourite toy?', 'Is it OK to say "no" sometimes?', 'How do you feel when a friend shares?'] },
+    { topic: 'Languages', text: 'Learning English is more important than learning math.', qs: ['When do you use English?', 'When do you use math?', 'Can you learn both?'] },
+    { topic: 'Future', text: 'Robots will do all the jobs one day.', qs: ['Which job could a robot do?', 'Which job needs a person?', 'Would you like a robot at home?'] },
+    { topic: 'Jobs', text: 'Being a YouTuber is a real job.', qs: ['Is it easy or hard to make videos?', 'What job do you want to do?', 'Do you want people to watch you?'] },
+    { topic: 'Truth', text: 'It is never OK to lie.', qs: ['What if you want to be kind to a friend?', 'Do you trust someone who always tells the truth?', 'Is there a time when it is OK to lie?'] }
+  ];
+  var N = STATEMENTS.length, ri, votes;
+  var els = { count: $('#count'), topic: $('#topic'), dots: $('#dots'), plank: $('#plank'), bubble: $('#bubble'), owl: $('#owlFace'), balloon: $('#balloon'),
+    statement: $('#statement'), yes: $('#yes'), no: $('#no'), talk: $('#talk'), frame: $('#frame'), qs: $('#qs'), next: $('#next'), change: $('#change'),
+    game: $('#game'), result: $('#result') };
+
+  function say(t) { els.bubble.textContent = t; }
+  function tally() { var y = 0, n = 0; votes.forEach(function (v) { if (v === 'yes') y++; else if (v === 'no') n++; }); return { y: y, n: n }; }
+  function tilt() { var t = tally(); var deg = Math.max(-16, Math.min(16, (t.n - t.y) * 4)); els.plank.style.setProperty('--tilt', deg + 'deg'); }
+  function renderDots() {
+    els.dots.innerHTML = '';
+    for (var i = 0; i < N; i++) {
+      var li = document.createElement('li'); li.className = 'dot' + (votes[i] ? ' ' + votes[i] : '') + (i === ri && !votes[i] ? ' now' : '');
+      li.setAttribute('aria-label', 'Sentence ' + (i + 1) + (votes[i] === 'yes' ? ', agreed' : votes[i] === 'no' ? ', disagreed' : ''));
+      els.dots.appendChild(li);
+    }
+  }
+  function hop() { els.owl.className = 'owl-face'; void els.owl.offsetWidth; els.owl.className = 'owl-face hop'; }
+
+  function render() {
+    var s = STATEMENTS[ri];
+    els.count.textContent = 'Sentence ' + (ri + 1) + ' of ' + N;
+    els.topic.textContent = s.topic;
+    els.statement.textContent = s.text;
+    els.balloon.className = 'balloon'; void els.balloon.offsetWidth; els.balloon.className = 'balloon pop';
+    var v = votes[ri];
+    els.yes.disabled = els.no.disabled = !!v;
+    els.yes.className = 'vote yes' + (v === 'yes' ? ' chosen' : v ? ' dim' : '');
+    els.no.className = 'vote no' + (v === 'no' ? ' chosen' : v ? ' dim' : '');
+    els.talk.hidden = !v;
+    if (v) fillTalk(v); else say('Read the sentence. Do you agree or disagree?');
+    els.next.textContent = ri < N - 1 ? 'Next sentence ▶' : 'See my results ▶';
+    renderDots(); tilt();
+  }
+
+  function fillTalk(v) {
+    var s = STATEMENTS[ri];
+    els.frame.className = 'frame' + (v === 'no' ? ' no' : '');
+    els.frame.innerHTML = (v === 'yes' ? 'I agree because ' : 'I disagree because ') + '<u>&nbsp;</u>';
+    els.qs.innerHTML = '';
+    s.qs.forEach(function (q) { var li = document.createElement('li'); li.textContent = q; els.qs.appendChild(li); });
+    say(v === 'yes' ? 'You said agree! Now tell your partner why.' : 'You said disagree! Now tell your partner why.');
+  }
+
+  function vote(v) {
+    if (votes[ri]) return;
+    votes[ri] = v; hop();
+    els.yes.disabled = els.no.disabled = true;
+    els.yes.className = 'vote yes' + (v === 'yes' ? ' chosen' : ' dim');
+    els.no.className = 'vote no' + (v === 'no' ? ' chosen' : ' dim');
+    els.talk.hidden = false; fillTalk(v); renderDots(); tilt();
+    try { els.next.focus({ preventScroll: true }); } catch (e) {}
+    els.talk.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+  }
+
+  function finish() {
+    els.game.hidden = true; els.result.hidden = false;
+    var t = tally(), e, title, text;
+    if (t.y > t.n) { e = '🌞'; title = 'Sunny Thinker!'; text = 'You agreed with most sentences. You like to see the good side of things.'; }
+    else if (t.n > t.y) { e = '🧐'; title = 'Super Questioner!'; text = 'You disagreed with most sentences. Good thinkers ask questions.'; }
+    else { e = '⚖️'; title = 'Fair Judge!'; text = 'You agreed and disagreed the same number of times. You think about both sides.'; }
+    text += ' Now pick your best opinion and tell the class why.';
+    $('#rEmoji').textContent = e; $('#rTitle').textContent = title; $('#rText').textContent = text;
+    $('#rYes').textContent = t.y; $('#rNo').textContent = t.n;
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  }
+
+  function newGame() {
+    ri = 0; votes = [];
+    els.result.hidden = true; els.game.hidden = false;
+    render();
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  }
+
+  els.yes.addEventListener('click', function () { vote('yes'); });
+  els.no.addEventListener('click', function () { vote('no'); });
+  els.change.addEventListener('click', function () { votes[ri] = undefined; render(); });
+  els.next.addEventListener('click', function () {
+    if (ri < N - 1) { ri++; render(); window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); } else finish();
+  });
+  $('#again').addEventListener('click', newGame);
+  var listen = $('#listen');
+  if (!('speechSynthesis' in window)) listen.hidden = true;
+  else listen.addEventListener('click', function () {
+    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(STATEMENTS[ri].text); u.lang = 'en-GB'; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {}
+  });
+  newGame();
+})();
+</script>
+
+</body></html>

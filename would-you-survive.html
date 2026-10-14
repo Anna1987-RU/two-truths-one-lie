@@ -1,0 +1,470 @@
+<title>Would You Survive</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: sticker title, an adventure picker, then one column: banner, a stepping-stone trail, three stat pills, a story page with three choices, the owl telling what happened. */
+  :root {
+    --sky1: #7fcfff;
+    --sky2: #dff4ff;
+    --card: #ffffff;
+    --fg: #2a2a5a;
+    --outline: #2a2a5a;
+    --accent: #ff5d8f;
+    --butter: #ffe066;
+    --on-bright: #2a2a5a;
+    --good: #14815a;
+    --bad: #c93a2f;
+    --btn: #ffffff;
+    --btn-fg: #2a2a5a;
+    --focus: #6c5ce7;
+    --soft: rgba(42, 42, 90, .64);
+    --ca: #ff8fab;
+    --cb: #6ec6ff;
+    --cc: #7ee0a8;
+    --heart: #ff5d8f;
+    --energy: #ffc83d;
+    --hope: #2ec4a0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+      --accent: #ff7aa6; --good: #6be8b0; --bad: #ff9a90; --btn: #3b3689; --btn-fg: #f1eeff;
+      --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+      --ca: #d6497a; --cb: #3a86d6; --cc: #2aa876;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky1: #14123a; --sky2: #2d2873; --card: #25215f; --fg: #f1eeff; --outline: #0d0b29;
+    --accent: #ff7aa6; --good: #6be8b0; --bad: #ff9a90; --btn: #3b3689; --btn-fg: #f1eeff;
+    --focus: #ffe066; --soft: rgba(241, 238, 255, .72);
+    --ca: #d6497a; --cb: #3a86d6; --cc: #2aa876;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background-color: var(--sky2);
+    background-image: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 420px);
+    background-repeat: no-repeat;
+    color: var(--fg);
+    font-family: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
+    font-weight: 600;
+    padding-block: 22px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+
+  /* Title */
+  .hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  h1 {
+    margin: 0; font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; font-weight: 800;
+    font-size: clamp(2.2rem, 7.5vw, 4rem); line-height: 1.05; display: flex; flex-wrap: wrap; justify-content: center; column-gap: .3em;
+  }
+  .word { display: inline-flex; }
+  .ltr {
+    display: inline-block; -webkit-text-stroke: .2em var(--outline); paint-order: stroke fill;
+    text-shadow: 0 .08em 0 var(--outline); transform: rotate(var(--r, 0deg));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ltr { animation: bob 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+    @keyframes bob { 50% { transform: translateY(-.09em) rotate(calc(var(--r, 0deg) * -1)); } }
+  }
+  .sub {
+    margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem;
+    background: var(--card); border: 3px solid var(--outline); border-radius: 999px; padding: .2em 1em; box-shadow: 0 4px 0 var(--outline);
+  }
+
+  /* Buttons */
+  .btn {
+    font: 800 1.15rem/1 'Baloo 2', sans-serif; padding: .8em 1.5em; border-radius: 999px; border: 3px solid var(--outline);
+    background: var(--btn); color: var(--btn-fg); box-shadow: 0 5px 0 var(--outline); cursor: pointer; transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--outline); }
+  .btn.primary { background: var(--accent); color: var(--on-bright); }
+  .btn.small { font-size: .95rem; padding: .55em 1em; }
+  .btn:focus-visible, .adv:focus-visible, .choice:focus-visible, .listen:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn.primary.pulse { animation: glow 1.1s ease-in-out infinite; }
+    @keyframes glow { 50% { box-shadow: 0 5px 0 var(--outline), 0 0 0 7px color-mix(in srgb, var(--accent) 40%, transparent); } }
+    @keyframes pop { from { opacity: 0; transform: translateY(20px) scale(.95); } }
+  }
+
+  /* Adventure picker */
+  .picktitle { margin: 0; text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.8rem; }
+  .advs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .adv {
+    --tc: var(--cb); font: inherit; color: var(--fg); text-align: center; cursor: pointer;
+    background: color-mix(in srgb, var(--tc) 34%, var(--card)); border: 4px solid var(--outline); border-radius: 30px; box-shadow: 0 8px 0 var(--outline);
+    padding: 24px 18px 22px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: transform .12s, box-shadow .12s;
+  }
+  .adv:nth-child(2) { --tc: var(--cc); }
+  @media (hover: hover) { .adv:hover { transform: translateY(-5px) rotate(-1deg); box-shadow: 0 13px 0 var(--outline); } }
+  .adv:active { transform: translateY(5px); box-shadow: 0 3px 0 var(--outline); }
+  .adv .big { font-size: 4.4rem; line-height: 1.1; }
+  .adv strong { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.7rem; line-height: 1.1; }
+  .adv span.d { font-size: 1.08rem; font-weight: 800; line-height: 1.4; }
+  .adv span.n { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .95rem; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin-top: 4px; }
+
+  /* Banner and trail */
+  .banner { display: flex; align-items: center; gap: 14px; background: var(--card); border: 4px solid var(--outline); border-radius: 24px; box-shadow: 0 6px 0 var(--outline); padding: 12px 16px; }
+  .banner .em { font-size: 2.4rem; line-height: 1; }
+  .banner .t { min-width: 0; }
+  .banner small { display: block; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); }
+  .banner strong { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.5rem; line-height: 1.1; }
+  .banner .btn { margin-left: auto; }
+  .trail { position: relative; list-style: none; margin: 0; padding: 4px 2px; display: flex; justify-content: space-between; }
+  .trail::before { content: ""; position: absolute; left: 18px; right: 18px; top: 50%; border-top: 4px dotted var(--outline); transform: translateY(-50%); }
+  .stone {
+    position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--outline); background: var(--card);
+    display: grid; place-items: center; font: 800 .95rem/1 'Baloo 2', sans-serif;
+  }
+  .stone.now { background: var(--butter); color: var(--on-bright); transform: translateY(-5px) scale(1.15); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent); }
+  .stone.g { background: var(--cc); color: var(--on-bright); }
+  .stone.b { background: var(--ca); color: var(--on-bright); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stone.g, :root:not([data-theme="light"]) .stone.b { color: #fff; } }
+  :root[data-theme="dark"] .stone.g, :root[data-theme="dark"] .stone.b { color: #fff; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .stat { background: var(--card); border: 3px solid var(--outline); border-radius: 20px; box-shadow: 0 5px 0 var(--outline); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .stat .top { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-family: 'Baloo 2', sans-serif; font-weight: 800; line-height: 1; }
+  .stat .nm { font-size: .85rem; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); display: flex; align-items: center; gap: 5px; }
+  .stat .nm i { font-style: normal; font-size: 1.2rem; }
+  .stat .val { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+  .bar { height: 14px; border-radius: 999px; border: 3px solid var(--outline); background: color-mix(in srgb, var(--fg) 12%, var(--card)); overflow: hidden; }
+  .fill { height: 100%; width: 100%; border-radius: 999px; transition: width .7s cubic-bezier(.34, 1.3, .64, 1); }
+  .fill.h { background: var(--heart); } .fill.e { background: var(--energy); } .fill.p { background: var(--hope); }
+  @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+  @media (max-width: 430px) { .stat { padding: 8px; } .stat .nm { font-size: .72rem; } .stat .val { font-size: 1.15rem; } }
+
+  /* Story page */
+  .page { position: relative; background: var(--card); border: 4px solid var(--outline); border-radius: 30px; box-shadow: 0 8px 0 var(--outline); padding: 26px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+  @media (prefers-reduced-motion: no-preference) { .page.pop { animation: pop .5s cubic-bezier(.34, 1.56, .64, 1); } }
+  .stagetag { align-self: flex-start; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .95rem; letter-spacing: .08em; text-transform: uppercase; background: var(--butter); color: var(--on-bright); border: 3px solid var(--outline); border-radius: 999px; padding: .1em .9em; box-shadow: 0 3px 0 var(--outline); transform: rotate(-2deg); }
+  .stagetitle { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(1.7rem, 5.5vw, 2.3rem); line-height: 1.15; padding-right: 52px; text-wrap: balance; }
+  .stagedesc { margin: 0; font-size: clamp(1.1rem, 3.2vw, 1.25rem); font-weight: 700; line-height: 1.55; }
+  .listen { position: absolute; top: 18px; right: 18px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--outline); background: var(--btn); color: var(--btn-fg); font-size: 1.1rem; cursor: pointer; box-shadow: 0 3px 0 var(--outline); }
+  .listen:active { transform: translateY(3px); box-shadow: none; }
+  .choices { display: flex; flex-direction: column; gap: 12px; }
+  .choice {
+    --tc: var(--ca); position: relative; font: 800 clamp(1.05rem, 3.1vw, 1.2rem)/1.4 'Nunito', sans-serif; color: var(--fg); text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 4px solid var(--outline); border-radius: 22px;
+    background: color-mix(in srgb, var(--tc) 30%, var(--card)); box-shadow: 0 6px 0 var(--outline); transition: transform .12s, box-shadow .12s, opacity .2s;
+  }
+  .choice:nth-child(2) { --tc: var(--cb); } .choice:nth-child(3) { --tc: var(--cc); }
+  @media (hover: hover) { .choice:not(:disabled):hover { transform: translateX(6px); box-shadow: 0 6px 0 var(--outline); } }
+  .choice:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 var(--outline); }
+  .choice:disabled { cursor: default; }
+  .choice .l { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--card); border: 3px solid var(--outline); display: grid; place-items: center; font: 800 1.3rem/1 'Baloo 2', sans-serif; }
+  .choice .tx { min-width: 0; }
+  .choice .star { margin-left: auto; flex: none; font-size: 1.5rem; }
+  .choice.dim { opacity: .5; }
+  .choice.pickGood { box-shadow: 0 6px 0 var(--outline), 0 0 0 6px var(--good); opacity: 1; }
+  .choice.pickBad { box-shadow: 0 6px 0 var(--outline), 0 0 0 6px var(--bad); opacity: 1; }
+  @media (prefers-reduced-motion: no-preference) { .choice.pickBad { animation: shake .45s; } @keyframes shake { 20% { translate: -7px 0; } 40% { translate: 7px 0; } 60% { translate: -4px 0; } 80% { translate: 3px 0; } } }
+
+  /* Outcome */
+  .out { display: flex; flex-direction: column; gap: 12px; }
+  .owl { display: flex; align-items: flex-start; gap: 12px; }
+  .owl-face { flex: none; width: 62px; height: 62px; border-radius: 50%; background: var(--butter); border: 4px solid var(--outline); display: grid; place-items: center; font-size: 2rem; box-shadow: 0 4px 0 var(--outline); }
+  .owl-face.hop { animation: hop .6s; }
+  @keyframes hop { 30% { transform: translateY(-14px) rotate(-8deg); } 60% { transform: translateY(0) rotate(6deg); } }
+  @media (prefers-reduced-motion: reduce) { .owl-face.hop { animation: none; } }
+  .bubble { position: relative; margin: 6px 0 0; flex: 1; min-width: 0; border: 3px solid var(--outline); border-radius: 18px; padding: 12px 16px; font-size: 1.12rem; font-weight: 800; line-height: 1.45; background: var(--card); }
+  .bubble::before { content: ""; position: absolute; left: -11px; top: 16px; width: 16px; height: 16px; background: inherit; border-left: 3px solid var(--outline); border-bottom: 3px solid var(--outline); transform: rotate(45deg); }
+  .bubble.good { background: color-mix(in srgb, var(--good) 22%, var(--card)); }
+  .bubble.bad { background: color-mix(in srgb, var(--bad) 20%, var(--card)); }
+  .bubble b { display: block; font-family: 'Baloo 2', sans-serif; font-size: 1.25rem; margin-bottom: 2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1rem; border: 3px solid var(--outline); border-radius: 999px; padding: .1em .75em; background: var(--card); display: inline-flex; gap: .35em; align-items: center; }
+  .chip.up { background: color-mix(in srgb, var(--good) 26%, var(--card)); }
+  .chip.down { background: color-mix(in srgb, var(--bad) 24%, var(--card)); }
+
+  /* End */
+  .end { text-align: center; background: var(--card); border: 4px solid var(--outline); border-radius: 30px; box-shadow: 0 8px 0 var(--outline); padding: 28px 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .end .em { font-size: 5rem; line-height: 1; }
+  @media (prefers-reduced-motion: no-preference) { .end .em { animation: hop 1.2s ease-in-out infinite; } }
+  .end h2 { margin: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(2rem, 8vw, 3rem); line-height: 1.1; }
+  .end p { margin: 0; max-width: 30em; font-size: 1.15rem; line-height: 1.5; font-weight: 800; }
+  .tiles { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .tile { min-width: 100px; padding: 10px 16px; border: 3px solid var(--outline); border-radius: 18px; font-family: 'Baloo 2', sans-serif; font-weight: 800; line-height: 1; background: color-mix(in srgb, var(--tc) 40%, var(--card)); }
+  .tile b { display: block; font-size: 2rem; } .tile span { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+
+  .confetti { position: fixed; top: -14px; z-index: 99; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity: .9; } }
+</style>
+
+<main class="wrap">
+  <header class="hero">
+    <h1 id="title" aria-label="Would You Survive?"></h1>
+    <p class="sub">Make smart choices. Can you get home?</p>
+  </header>
+
+  <section id="pick" class="stack">
+    <h2 class="picktitle">Pick your adventure!</h2>
+    <div class="advs" id="advs"></div>
+  </section>
+
+  <section id="play" class="stack" hidden>
+    <div class="banner">
+      <span class="em" id="bEmoji" aria-hidden="true"></span>
+      <div class="t"><small>Your adventure</small><strong id="bName"></strong></div>
+      <button class="btn small" id="change" type="button">Change</button>
+    </div>
+    <ol class="trail" id="trail" aria-label="Stages"></ol>
+    <div class="stats" aria-label="Your stats">
+      <div class="stat"><div class="top"><span class="nm"><i aria-hidden="true">❤️</i>Hearts</span><span class="val" id="vh">100</span></div><div class="bar"><div class="fill h" id="fh"></div></div></div>
+      <div class="stat"><div class="top"><span class="nm"><i aria-hidden="true">⚡</i>Energy</span><span class="val" id="ve">100</span></div><div class="bar"><div class="fill e" id="fe"></div></div></div>
+      <div class="stat"><div class="top"><span class="nm"><i aria-hidden="true">✨</i>Hope</span><span class="val" id="vp">100</span></div><div class="bar"><div class="fill p" id="fp"></div></div></div>
+    </div>
+
+    <div class="page pop" id="page">
+      <button class="listen" id="listen" type="button" aria-label="Listen to the story">🔊</button>
+      <span class="stagetag" id="tag"></span>
+      <h2 class="stagetitle" id="stitle"></h2>
+      <p class="stagedesc" id="sdesc"></p>
+      <div class="choices" id="choices"></div>
+      <div class="out" id="out" hidden>
+        <div class="owl">
+          <div class="owl-face" id="owlFace" aria-hidden="true">🦉</div>
+          <div class="bubble" id="bubble" aria-live="polite"></div>
+        </div>
+        <div class="row"><button class="btn primary pulse" id="next" type="button">Next ▶</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="end" id="end" hidden>
+    <div class="em" id="eEmoji" aria-hidden="true"></div>
+    <h2 id="eTitle"></h2>
+    <p id="eText"></p>
+    <div class="tiles">
+      <div class="tile" style="--tc:var(--heart)"><b id="eh">0</b><span>Hearts</span></div>
+      <div class="tile" style="--tc:var(--energy)"><b id="ee">0</b><span>Energy</span></div>
+      <div class="tile" style="--tc:var(--hope)"><b id="ep">0</b><span>Hope</span></div>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="again" type="button">↺ Try again</button>
+      <button class="btn" id="other" type="button">Pick another adventure</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Title */
+  (function () {
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43'], n = 0, h1 = $('#title');
+    ['Would', 'You', 'Survive?'].forEach(function (w) {
+      var word = document.createElement('span'); word.className = 'word'; word.setAttribute('aria-hidden', 'true');
+      w.split('').forEach(function (ch) {
+        var s = document.createElement('span'); s.className = 'ltr'; s.textContent = ch; s.style.color = cols[n % cols.length];
+        s.style.setProperty('--r', ((n % 2 ? -1 : 1) * (2 + (n % 3) * 1.5)) + 'deg'); s.style.setProperty('--d', (n * 0.09) + 's');
+        word.appendChild(s); n++;
+      });
+      h1.appendChild(word);
+    });
+  })();
+
+  /* Data. C(text, isGood, hearts, energy, hope, outcome) */
+  function C(t, g, h, e, p, o) { return { t: t, g: !!g, h: h, e: e, p: p, o: o }; }
+  function S(t, d, c) { return { t: t, d: d, c: c }; }
+  var ADVENTURES = [
+    { id: 'island', name: 'Deserted Island', emoji: '🏝️', blurb: 'Your boat trip ended on an island. Find water, build a shelter and call for help.',
+      win: 'You were rescued! You made smart choices and the helicopter took you home.',
+      mid: 'You were rescued in the end, but it was hard. Next time, think about water, shelter and signals first.',
+      low: 'The helicopter did not find you this time. Try again and make different choices!',
+      stages: [
+        S('You wake up on a beach.', 'Your boat trip ended on a deserted island. You are alone. The sun is hot and you are thirsty. What do you do first?', [
+          C('Look for fresh water.', 1, 0, -10, 5, 'You find a little stream and drink. Ahh, that feels much better!'),
+          C('Walk into the jungle to find other people.', 0, -15, -20, 10, 'You walk for a long time, but you find nobody. Now you are tired and thirsty.'),
+          C('Lie down in the shade and rest.', 0, -10, 15, -5, 'You feel rested, but you are still very thirsty. Water comes first!')]),
+        S('Night is coming.', 'It is getting dark and cold. You hear strange night sounds. You need a safe place to sleep.', [
+          C('Build a shelter with palm leaves and branches.', 1, 0, -15, 10, 'Your shelter stops the wind and keeps you warm. You feel safe.'),
+          C('Climb a tree and sleep on a branch.', 0, -20, -15, -5, 'You slip in the night and hurt your arm. A tree is not a good bed.'),
+          C('Make a fire by rubbing two sticks.', 0, -5, -25, -10, 'You rub and rub for two hours, but there is no fire. Your hands are sore.')]),
+        S('You see a ship!', 'A big ship is sailing far away. This could be your only chance! How do you make the sailors see you?', [
+          C('Flash the sun at the ship with your little mirror.', 1, 0, -5, 20, 'Flash, flash! The sailors see the light. The ship is turning toward your island!'),
+          C('Swim out to the ship.', 0, -20, -25, -10, 'The waves are too strong. You swim back to the beach. The ship sails away.'),
+          C('Wave your arms and shout.', 0, -5, -10, -5, 'The ship is too far away to see or hear you. Your arms get tired.')]),
+        S('You find a pond.', 'The water in the pond is green and muddy. It does not look clean. You are very thirsty. What do you do?', [
+          C('Boil the water before you drink it.', 1, 10, -5, 5, 'You heat the water with hot stones. Now it is clean and safe. You drink and feel great.'),
+          C('Drink it now. You are too thirsty!', 0, -30, -10, -15, 'The dirty water gives you a very bad tummy ache. You feel sick all night.'),
+          C('Do not drink it. Look for other water.', 0, -15, -20, -5, 'You walk and walk, but you find no other water. You get thirstier.')]),
+        S('A storm is coming.', 'Dark clouds fill the sky and the wind gets strong. A big storm is coming to your island. Get ready fast!', [
+          C('Make your shelter stronger and collect coconuts and water.', 1, 0, -20, 10, 'The storm is loud, but you are safe and dry in your strong shelter with your food.'),
+          C('Hide in a cave near the beach.', 0, -20, -10, -5, 'Water fills the cave during the storm. You have to run out fast!'),
+          C('Go up a hill and hide behind big rocks.', 1, -5, -15, 5, 'You find a good place behind the rocks. You are cold and wet, but you are safe.')]),
+        S('You find an old boat.', 'On the other side of the island you see a small wooden boat. It has a hole in it, but maybe you can fix it. Will you try?', [
+          C('Take some days to fix the boat.', 1, -5, -25, 15, 'You cover the hole with sticky tree sap and cloth. The boat looks ready. Now you have a way to leave!'),
+          C('Leave it. It is too risky.', 0, 0, 0, -10, 'You walk away. But you keep thinking about going home. You feel sad.'),
+          C('Use it as a house.', 0, 5, -5, -5, 'The boat is a nice shelter, but now you are not trying to go home.')]),
+        S('You hear a helicopter!', 'A rescue helicopter is flying over the island! You only have a few seconds. How do you get its attention?', [
+          C('Make smoke with a fire and green leaves.', 1, 0, -10, 25, 'Thick smoke rises high into the sky. The helicopter sees it and comes down toward you!'),
+          C('Run to the beach and wave.', 0, -10, -20, -15, 'The pilot does not see you in time. The helicopter flies away.'),
+          C('Flash your mirror at the pilot.', 1, 0, -5, 20, 'The pilot sees the bright flash and turns around. They found you!')]),
+        S('The helicopter is here!', 'A rope ladder comes down. You are tired and hungry. Can you reach it?', [
+          C('Take a deep breath and climb up!', 1, -10, -30, 30, 'You climb step by step. Strong hands pull you inside. You made it. You are going home!'),
+          C('Wait for the helicopter to land.', 0, -15, -10, -20, 'The ground is too bumpy to land. The helicopter has to fly away.'),
+          C('Ask them to come lower.', 0, -5, -15, -10, 'They cannot fly any lower safely. You missed your chance.')])
+      ] },
+    { id: 'forest', name: 'Lost in the Forest', emoji: '🌲', blurb: 'You followed a butterfly and lost your class. Stay calm and find your way back.',
+      win: 'Your teacher found you and everybody cheered! You stayed calm and made smart choices.',
+      mid: 'You were found at last, but it was a long, scary walk. Next time, stay calm and make some noise so people can find you.',
+      low: 'You are still lost in the forest. Try again and make different choices!',
+      stages: [
+        S('You cannot see your class.', 'You followed a pretty butterfly and now you are alone in the forest. All the trees look the same. What do you do first?', [
+          C('Stay here and shout "Help! I am here!"', 1, 0, -5, 10, 'Good thinking! If you stay in one place, people can find you more easily.'),
+          C('Run in any direction.', 0, -10, -25, -5, 'You run and run, but all the trees look the same. Now you are more lost and very tired.'),
+          C('Climb a big tree to look around.', 0, -15, -15, 0, 'The branches are slippery. You slide down and scratch your knee.')]),
+        S('It starts to rain.', 'Big raindrops fall from the grey sky. You are getting wet and cold.', [
+          C('Make a little roof with branches and big leaves.', 1, 0, -10, 10, 'Now you are dry! You feel clever and warm.'),
+          C('Keep walking in the rain.', 0, -15, -15, -10, 'You get cold and your shoes are full of mud.'),
+          C('Stand under a tree with thick leaves.', 1, -5, -5, 5, 'The leaves keep most of the rain off. You are a little wet, but OK.')]),
+        S('Something moves in the bushes.', 'You hear a rustling noise. Something small and brown is moving behind the leaves.', [
+          C('Stay calm and watch quietly.', 1, 0, 0, 10, 'It is a rabbit! It looks at you and hops away. You smile.'),
+          C('Scream and run away.', 0, -10, -20, -10, 'You run so fast that you trip over a root. Ouch! It was only a rabbit.'),
+          C('Throw a stick at it.', 0, 0, -5, -5, 'The rabbit jumps away. Be kind to animals and stay calm!')]),
+        S('You find red berries.', 'You are hungry. A bush has bright red berries, but you do not know what they are.', [
+          C('Do not eat them. Only eat food you know is safe.', 1, 0, -5, 10, 'Smart! Some wild berries can make you very sick. You wait for real food.'),
+          C('Eat a big handful.', 0, -30, -10, -10, 'Oh no! Your tummy hurts a lot. You feel sick.'),
+          C('Give one to a squirrel first.', 0, -5, -5, -5, 'The squirrel runs away with it. Now you still do not know. Do not eat them!')]),
+        S('You find a stream.', 'You hear running water. Long ago your teacher said, "A stream often leads to people." Which way do you go?', [
+          C('Follow the stream downhill.', 1, 0, -15, 15, 'You walk next to the water. Soon you see a path and hear voices far away!'),
+          C('Walk away from the stream, uphill.', 0, -10, -25, -10, 'The hill is steep and the forest gets thicker. You feel tired.'),
+          C('Sit by the stream and play.', 0, 0, 5, -10, 'The water is fun, but nobody can find you here. It starts to get late.')]),
+        S('You hear a whistle!', 'Someone is blowing a whistle in the forest. It is your teacher! How do you answer?', [
+          C('Shout "I am here!" as loud as you can.', 1, 0, -10, 30, 'Your teacher hears you and runs toward you. Your friends cheer. You are safe!'),
+          C('Hide behind a tree.', 0, 0, 0, -20, 'Nobody can see you. The whistle gets quieter. Oh no!'),
+          C('Stay quiet and wait.', 0, 0, 0, -15, 'Your teacher cannot hear you. You must make a sound so people can find you.')])
+      ] }
+  ];
+
+  var LET = ['A', 'B', 'C'];
+  var sc, si, st, hist, answered, shown;
+  var els = { pick: $('#pick'), play: $('#play'), end: $('#end'), advs: $('#advs'), trail: $('#trail'), page: $('#page'), tag: $('#tag'), stitle: $('#stitle'), sdesc: $('#sdesc'),
+    choices: $('#choices'), out: $('#out'), bubble: $('#bubble'), owl: $('#owlFace'), next: $('#next') };
+
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function clamp(v) { return Math.max(0, Math.min(100, v)); }
+  function show(which) { els.pick.hidden = which !== 'pick'; els.play.hidden = which !== 'play'; els.end.hidden = which !== 'end'; window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); }
+
+  function confetti(n) {
+    if (reduced) return;
+    var cols = ['#ff5d8f', '#ffe066', '#4fd1c5', '#9c8cff', '#ff9f43', '#7bd957'];
+    for (var i = 0; i < n; i++) {
+      var c = document.createElement('div'); c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % cols.length];
+      c.style.width = (6 + Math.random() * 7) + 'px'; c.style.height = (8 + Math.random() * 9) + 'px'; c.style.borderRadius = Math.random() > .5 ? '50%' : '3px';
+      c.style.animationDuration = (1.8 + Math.random() * 1.6) + 's'; c.style.animationDelay = (Math.random() * .3) + 's';
+      document.body.appendChild(c); setTimeout(function (el) { el.remove(); }.bind(null, c), 4200);
+    }
+  }
+
+  /* Picker */
+  ADVENTURES.forEach(function (a) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'adv';
+    b.innerHTML = '<span class="big" aria-hidden="true">' + a.emoji + '</span><strong></strong><span class="d"></span><span class="n">' + a.stages.length + ' stages</span>';
+    b.querySelector('strong').textContent = a.name; b.querySelector('.d').textContent = a.blurb;
+    b.addEventListener('click', function () { start(a); });
+    els.advs.appendChild(b);
+  });
+
+  function setStats(animate) {
+    ['h', 'e', 'p'].forEach(function (k) {
+      $('#f' + k).style.width = st[k] + '%'; $('#v' + k).textContent = st[k];
+    });
+  }
+  function renderTrail() {
+    els.trail.innerHTML = '';
+    sc.stages.forEach(function (x, i) {
+      var li = document.createElement('li'); var r = hist[i];
+      li.className = 'stone' + (r === true ? ' g' : r === false ? ' b' : '') + (i === si && r === undefined ? ' now' : '');
+      li.textContent = i === sc.stages.length - 1 ? '🏁' : (i + 1);
+      li.setAttribute('aria-label', 'Stage ' + (i + 1));
+      els.trail.appendChild(li);
+    });
+  }
+
+  function start(a) {
+    sc = a; si = 0; st = { h: 100, e: 100, p: 100 }; hist = [];
+    $('#bEmoji').textContent = a.emoji; $('#bName').textContent = a.name;
+    setStats(); show('play'); renderStage();
+  }
+
+  function renderStage() {
+    var s = sc.stages[si]; answered = false; shown = shuffle(s.c);
+    els.tag.textContent = 'Stage ' + (si + 1) + ' of ' + sc.stages.length;
+    els.stitle.textContent = s.t; els.sdesc.textContent = s.d;
+    els.page.className = 'page'; void els.page.offsetWidth; els.page.className = 'page pop';
+    els.out.hidden = true; els.choices.innerHTML = '';
+    shown.forEach(function (c, k) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'choice';
+      b.innerHTML = '<span class="l" aria-hidden="true">' + LET[k] + '</span><span class="tx"></span>';
+      b.querySelector('.tx').textContent = c.t;
+      b.setAttribute('aria-label', 'Choice ' + LET[k] + ': ' + c.t);
+      b.addEventListener('click', function () { choose(k); });
+      els.choices.appendChild(b);
+    });
+    renderTrail();
+  }
+
+  function choose(k) {
+    if (answered) return; answered = true;
+    var c = shown[k];
+    st.h = clamp(st.h + c.h); st.e = clamp(st.e + c.e); st.p = clamp(st.p + c.p); setStats();
+    hist[si] = c.g; renderTrail();
+    Array.prototype.forEach.call(els.choices.children, function (b, i) {
+      b.disabled = true;
+      if (i === k) b.classList.add(c.g ? 'pickGood' : 'pickBad'); else b.classList.add('dim');
+      if (shown[i].g) { var star = document.createElement('span'); star.className = 'star'; star.setAttribute('aria-label', 'Smart choice'); star.textContent = '⭐'; b.appendChild(star); }
+    });
+    var chips = [['❤️', c.h], ['⚡', c.e], ['✨', c.p]].filter(function (x) { return x[1] !== 0; })
+      .map(function (x) { return '<span class="chip ' + (x[1] > 0 ? 'up' : 'down') + '"><span aria-hidden="true">' + x[0] + '</span>' + (x[1] > 0 ? '+' : '') + x[1] + '</span>'; }).join('');
+    els.bubble.className = 'bubble ' + (c.g ? 'good' : 'bad');
+    els.bubble.innerHTML = '<b></b><span class="t"></span><div class="chips">' + chips + '</div>';
+    els.bubble.querySelector('b').textContent = c.g ? 'Smart choice!' : 'Oh no!';
+    els.bubble.querySelector('.t').textContent = c.o;
+    els.next.textContent = si < sc.stages.length - 1 ? 'Next ▶' : 'See what happened ▶';
+    els.out.hidden = false;
+    els.owl.className = 'owl-face'; void els.owl.offsetWidth; els.owl.className = 'owl-face hop';
+    if (c.g) confetti(24);
+    try { els.next.focus({ preventScroll: true }); } catch (e) {}
+    els.out.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+  }
+
+  function finish() {
+    var good = hist.filter(Boolean).length, ratio = good / sc.stages.length, e, t, d;
+    if (ratio >= 0.75) { e = '🏆'; t = 'You Survived!'; d = sc.win; confetti(110); setTimeout(function () { confetti(80); }, 700); }
+    else if (ratio >= 0.5) { e = '🌟'; t = 'You Made It!'; d = sc.mid; confetti(40); }
+    else { e = '🧭'; t = 'Almost!'; d = sc.low; }
+    d += ' You made ' + good + ' smart choices out of ' + sc.stages.length + '.';
+    $('#eEmoji').textContent = e; $('#eTitle').textContent = t; $('#eText').textContent = d;
+    $('#eh').textContent = st.h; $('#ee').textContent = st.e; $('#ep').textContent = st.p;
+    show('end');
+  }
+
+  els.next.addEventListener('click', function () { if (si < sc.stages.length - 1) { si++; renderStage(); window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); } else finish(); });
+  $('#change').addEventListener('click', function () { show('pick'); });
+  $('#other').addEventListener('click', function () { show('pick'); });
+  $('#again').addEventListener('click', function () { start(sc); });
+  var listen = $('#listen');
+  if (!('speechSynthesis' in window)) listen.hidden = true;
+  else listen.addEventListener('click', function () {
+    try { speechSynthesis.cancel(); var s = sc.stages[si], u = new SpeechSynthesisUtterance(s.t + ' ' + s.d); u.lang = 'en-GB'; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {}
+  });
+  show('pick');
+})();
+</script>

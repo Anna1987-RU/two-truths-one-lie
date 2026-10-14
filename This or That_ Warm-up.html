@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>This or That? Warm-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #efe6ff;
+  --bg-dot: #d9c9ff;
+  --surface: #fffdf7;
+  --text: #2b1b5a;
+  --line: #2b1b5a;
+  --ink: #2b1b5a;
+  --pink: #ff7ac6;
+  --lemon: #ffe45e;
+  --mint: #5ce1b9;
+  --sky: #6cb8ff;
+  --orange: #ff9b54;
+  --shadow: 6px 6px 0 var(--line);
+  --display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1238;
+    --bg-dot: #2c1d57;
+    --surface: #2b1d52;
+    --text: #fff4d6;
+    --line: #fff4d6;
+    --shadow: 6px 6px 0 #000;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1c1238;
+  --bg-dot: #2c1d57;
+  --surface: #2b1d52;
+  --text: #fff4d6;
+  --line: #fff4d6;
+  --shadow: 6px 6px 0 #000;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--body);
+  color: var(--text);
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--bg-dot) 2.5px, transparent 2.6px);
+  background-size: 26px 26px;
+  overflow-x: hidden;
+}
+.floaty {
+  position: fixed; z-index: 0; pointer-events: none; font-size: 2rem; opacity: .9;
+  animation: drift 7s ease-in-out infinite alternate;
+}
+.f1 { top: 7%; left: 5%; }
+.f2 { top: 14%; right: 7%; animation-delay: -2s; }
+.f3 { bottom: 10%; left: 8%; animation-delay: -4s; }
+.f4 { bottom: 16%; right: 5%; animation-delay: -1s; }
+@keyframes drift { from { transform: translateY(0) rotate(-8deg); } to { transform: translateY(-14px) rotate(10deg); } }
+
+main {
+  position: relative; z-index: 1;
+  max-width: 920px; margin: 0 auto; padding: 20px 16px 48px;
+}
+h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; letter-spacing: .01em; }
+
+/* ---------- Start screen ---------- */
+.hero { text-align: center; padding-top: 4vh; }
+.title {
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  line-height: .95;
+  display: inline-block;
+}
+.title span { display: inline-block; text-shadow: 4px 4px 0 var(--ink); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; }
+.title .t1 { color: var(--pink); transform: rotate(-4deg); }
+.title .t2 { color: var(--lemon); transform: rotate(3deg); }
+.title .t3 { color: var(--mint); transform: rotate(-2deg); }
+.sub { font-size: 1.25rem; margin: 22px auto 0; max-width: 28ch; line-height: 1.35; font-weight: 500; }
+.steps { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 28px 0; }
+.step {
+  background: var(--surface); border: 3px solid var(--line); border-radius: 18px;
+  padding: 12px 16px; font-weight: 600; box-shadow: 4px 4px 0 var(--line);
+}
+.step:nth-child(1) { transform: rotate(-2deg); }
+.step:nth-child(2) { transform: rotate(1.5deg); }
+.step:nth-child(3) { transform: rotate(-1deg); }
+
+.btn {
+  font-family: var(--display); font-size: 1.4rem; cursor: pointer;
+  background: var(--lemon); color: #2b1b5a;
+  border: 4px solid #2b1b5a; border-radius: 999px;
+  padding: 12px 34px; box-shadow: 5px 5px 0 #2b1b5a;
+  transition: transform .12s, box-shadow .12s;
+}
+.btn:hover { transform: translate(-2px, -2px) rotate(-1deg); box-shadow: 8px 8px 0 #2b1b5a; }
+.btn:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 #2b1b5a; }
+.btn.mint { background: var(--mint); }
+.btn.small { font-size: 1.1rem; padding: 8px 24px; }
+:focus-visible { outline: 4px solid var(--sky); outline-offset: 4px; }
+
+/* ---------- Game ---------- */
+.hidden { display: none !important; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.dots { display: flex; gap: 6px; flex-wrap: wrap; }
+.dot { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--line); background: var(--surface); transition: background .2s, transform .2s; }
+.dot.done { background: var(--mint); }
+.dot.now { background: var(--lemon); transform: scale(1.35); }
+.count { font-weight: 600; font-size: 1rem; }
+
+.round-title { text-align: center; font-size: clamp(1.8rem, 6vw, 2.8rem); margin: 4px 0 18px; }
+
+.arena { position: relative; display: grid; grid-template-columns: 1fr; gap: 26px; }
+@media (min-width: 700px) { .arena { grid-template-columns: 1fr 1fr; gap: 44px; } }
+
+.choice {
+  position: relative; cursor: pointer; text-align: center;
+  font-family: var(--body); color: #2b1b5a;
+  border: 4px solid #2b1b5a; border-radius: 34px 28px 36px 26px;
+  padding: 22px 16px 20px; box-shadow: 7px 7px 0 #2b1b5a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  min-height: 190px;
+  transition: transform .18s cubic-bezier(.3,1.6,.5,1), opacity .25s, box-shadow .18s, filter .25s;
+}
+@media (min-width: 700px) { .choice { min-height: 280px; } }
+.choice:nth-child(1) { transform: rotate(-1.5deg); }
+.choice.b { border-radius: 28px 36px 26px 34px; transform: rotate(1.5deg); }
+.choice:hover { transform: rotate(0deg) scale(1.04); box-shadow: 10px 10px 0 #2b1b5a; }
+.choice .emoji { font-size: clamp(3.6rem, 12vw, 5.6rem); line-height: 1; filter: drop-shadow(3px 4px 0 rgba(43,27,90,.25)); }
+.choice .label { font-family: var(--display); font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.05; }
+.choice.picked { transform: rotate(0deg) scale(1.07); box-shadow: 10px 10px 0 #2b1b5a; animation: pop .45s cubic-bezier(.3,1.6,.5,1); }
+.choice.dim { opacity: .45; filter: grayscale(.5); transform: scale(.94) rotate(0); box-shadow: 3px 3px 0 #2b1b5a; cursor: default; }
+.choice .badge {
+  position: absolute; top: -18px; right: -10px; background: var(--lemon);
+  border: 3px solid #2b1b5a; border-radius: 999px; padding: 2px 14px; font-weight: 600; font-size: .95rem;
+  transform: rotate(8deg) scale(0); transition: transform .25s cubic-bezier(.3,1.8,.5,1);
+}
+.choice.picked .badge { transform: rotate(8deg) scale(1); }
+@keyframes pop { 0% { transform: scale(.9) rotate(-4deg); } 100% { transform: rotate(0) scale(1.07); } }
+
+.vs {
+  position: absolute; z-index: 2; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px; height: 70px; border-radius: 50%;
+  background: var(--lemon); color: #2b1b5a; border: 4px solid #2b1b5a;
+  display: grid; place-items: center; font-family: var(--display); font-size: 1.6rem;
+  box-shadow: 4px 4px 0 #2b1b5a; pointer-events: none;
+  animation: wobble 2.4s ease-in-out infinite;
+}
+@keyframes wobble { 0%,100% { transform: translate(-50%,-50%) rotate(-10deg); } 50% { transform: translate(-50%,-50%) rotate(10deg) scale(1.08); } }
+
+.panel {
+  margin-top: 34px; background: var(--surface); border: 4px solid var(--line);
+  border-radius: 28px; padding: 20px 22px; box-shadow: var(--shadow);
+  animation: slideIn .35s ease-out;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.panel h2 { font-size: 1.6rem; margin-bottom: 10px; }
+.frame { font-size: 1.3rem; font-weight: 600; margin: 0 0 12px; line-height: 1.5; }
+.blank { display: inline-block; min-width: 3.5ch; border-bottom: 4px dashed var(--pink); }
+.words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.word {
+  background: var(--sky); color: #2b1b5a; border: 3px solid #2b1b5a; border-radius: 999px;
+  padding: 3px 14px; font-weight: 600;
+}
+.word:nth-child(2) { background: var(--pink); }
+.word:nth-child(3) { background: var(--mint); }
+.word:nth-child(4) { background: var(--lemon); }
+.follow { margin: 0 0 18px; font-size: 1.15rem; }
+.follow b { font-family: var(--display); font-weight: 400; color: var(--pink); }
+.panel .row { display: flex; justify-content: flex-end; }
+
+/* ---------- End ---------- */
+.end { text-align: center; padding-top: 4vh; }
+.end h1 { font-size: clamp(2.6rem, 10vw, 5rem); color: var(--mint); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--ink); transform: rotate(-3deg); display: inline-block; }
+.recap { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 30px 0; }
+.chip {
+  background: var(--surface); border: 3px solid var(--line); border-radius: 18px;
+  padding: 8px 14px; font-weight: 600; font-size: 1.05rem; box-shadow: 3px 3px 0 var(--line);
+}
+.chip:nth-child(3n+1) { transform: rotate(-2deg); }
+.chip:nth-child(3n+2) { transform: rotate(1.5deg); }
+.chip:nth-child(3n) { transform: rotate(-1deg); }
+.end p { font-size: 1.2rem; margin: 0 auto; max-width: 30ch; }
+.end .btn { margin-top: 18px; }
+
+.theme-toggle {
+  position: fixed; z-index: 5; top: calc(10px + env(safe-area-inset-top, 0px)); right: 10px;
+  width: 44px; height: 44px; border-radius: 50%; font-size: 1.3rem; cursor: pointer;
+  background: var(--surface); border: 3px solid var(--line); box-shadow: 3px 3px 0 var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="floaty f1" aria-hidden="true">⭐</div>
+<div class="floaty f2" aria-hidden="true">🌈</div>
+<div class="floaty f3" aria-hidden="true">🍕</div>
+<div class="floaty f4" aria-hidden="true">🚀</div>
+<button class="theme-toggle" id="themeBtn" aria-label="Switch light and dark mode">🌙</button>
+
+<main>
+  <!-- START -->
+  <section class="hero" id="start">
+    <h1 class="title"><span class="t1">This</span> <span class="t2">or</span> <span class="t3">That?</span></h1>
+    <p class="sub">Pick one. Then tell me why!</p>
+    <div class="steps">
+      <div class="step">👆 Choose</div>
+      <div class="step">💬 Say why</div>
+      <div class="step">➡️ Next</div>
+    </div>
+    <button class="btn" id="startBtn">Let's go!</button>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="hidden">
+    <div class="topbar">
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <div class="count" id="count"></div>
+    </div>
+    <h2 class="round-title" id="roundTitle">This or that?</h2>
+    <div class="arena" id="arena">
+      <button class="choice a" id="cardA"></button>
+      <button class="choice b" id="cardB"></button>
+      <div class="vs" aria-hidden="true">VS</div>
+    </div>
+    <div class="panel hidden" id="panel" aria-live="polite">
+      <h2>Now tell me why!</h2>
+      <p class="frame" id="frame"></p>
+      <div class="words" id="words"></div>
+      <p class="follow" id="follow"></p>
+      <div class="row"><button class="btn mint small" id="nextBtn">Next</button></div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section class="end hidden" id="end">
+    <h1>Great job!</h1>
+    <div class="recap" id="recap"></div>
+    <p>You are warmed up. Time for the lesson!</p>
+    <button class="btn" id="againBtn">Play again</button>
+  </section>
+</main>
+
+<script>
+const ROUNDS = [
+  { a: { e: "🍕", t: "Pizza", c: "#ff7ac6" }, b: { e: "🍔", t: "Burger", c: "#ffe45e" },
+    words: ["tasty", "cheesy", "juicy", "yummy"], follow: "How often do you eat it?" },
+  { a: { e: "🐱", t: "Cats", c: "#5ce1b9" }, b: { e: "🐶", t: "Dogs", c: "#ff9b54" },
+    words: ["cute", "lazy", "friendly", "loud"], follow: "Do you have a pet? What is its name?" },
+  { a: { e: "☀️", t: "Summer", c: "#ffe45e" }, b: { e: "❄️", t: "Winter", c: "#6cb8ff" },
+    words: ["hot", "cold", "sunny", "snowy"], follow: "What do you do in this season?" },
+  { a: { e: "🎬", t: "Watch a movie", c: "#ff7ac6" }, b: { e: "🎮", t: "Play video games", c: "#5ce1b9" },
+    words: ["exciting", "relaxing", "boring", "funny"], follow: "What is your favourite one?" },
+  { a: { e: "🫥", t: "Be invisible", c: "#6cb8ff" }, b: { e: "🦸", t: "Fly like a bird", c: "#ff9b54" },
+    words: ["amazing", "scary", "useful", "dangerous"], follow: "Where do you go first?" },
+  { a: { e: "🏖️", t: "Beach holiday", c: "#ffe45e" }, b: { e: "⛰️", t: "Mountain trip", c: "#5ce1b9" },
+    words: ["relaxing", "tiring", "beautiful", "adventurous"], follow: "Who do you go with?" },
+  { a: { e: "🐓", t: "Early bird", c: "#ff9b54" }, b: { e: "🦉", t: "Night owl", c: "#a98bff" },
+    words: ["sleepy", "tired", "busy", "quiet"], follow: "What time do you go to bed?" },
+  { a: { e: "💬", t: "Send a text", c: "#6cb8ff" }, b: { e: "📞", t: "Make a call", c: "#ff7ac6" },
+    words: ["quick", "easy", "personal", "annoying"], follow: "Who do you talk to most?" },
+  { a: { e: "🐉", t: "Pet dragon", c: "#5ce1b9" }, b: { e: "🤖", t: "Pet robot", c: "#ffe45e" },
+    words: ["cool", "strange", "dangerous", "helpful"], follow: "What name do you give it?" },
+  { a: { e: "🥞", t: "Pancakes", c: "#ffe45e" }, b: { e: "🍦", t: "Ice cream", c: "#ff7ac6" },
+    words: ["sweet", "cold", "delicious", "sticky"], follow: "What is your favourite topping?" },
+  { a: { e: "📚", t: "Read a book", c: "#a98bff" }, b: { e: "📱", t: "Watch YouTube", c: "#ff9b54" },
+    words: ["interesting", "long", "creative", "boring"], follow: "What was the last thing you read or watched?" },
+  { a: { e: "🧠", t: "Read minds", c: "#ff7ac6" }, b: { e: "🌀", t: "Teleport", c: "#6cb8ff" },
+    words: ["useful", "secret", "fast", "scary"], follow: "What do you do first with your power?" }
+];
+
+const $ = id => document.getElementById(id);
+let idx = 0, picks = [], locked = false;
+
+function show(id) { ["start", "game", "end"].forEach(s => $(s).classList.toggle("hidden", s !== id)); window.scrollTo(0, 0); }
+
+function buildDots() {
+  $("dots").innerHTML = ROUNDS.map((_, i) => `<span class="dot" data-i="${i}"></span>`).join("");
+}
+
+function paintDots() {
+  document.querySelectorAll(".dot").forEach((d, i) => {
+    d.className = "dot" + (i < idx ? " done" : i === idx ? " now" : "");
+  });
+  $("count").textContent = (idx + 1) + " / " + ROUNDS.length;
+}
+
+function fillCard(el, side, data) {
+  el.className = "choice " + side;
+  el.style.background = data.c;
+  el.disabled = false;
+  el.innerHTML = `<span class="badge">My pick!</span><span class="emoji" aria-hidden="true">${data.e}</span><span class="label">${data.t}</span>`;
+  el.setAttribute("aria-label", data.t);
+}
+
+function loadRound() {
+  const r = ROUNDS[idx];
+  locked = false;
+  fillCard($("cardA"), "a", r.a);
+  fillCard($("cardB"), "b", r.b);
+  $("panel").classList.add("hidden");
+  $("nextBtn").textContent = idx === ROUNDS.length - 1 ? "Finish" : "Next";
+  paintDots();
+}
+
+function choose(side) {
+  if (locked) return;
+  locked = true;
+  const r = ROUNDS[idx];
+  const mine = r[side], other = side === "a" ? "b" : "a";
+  picks[idx] = mine;
+  $("card" + side.toUpperCase()).classList.add("picked");
+  $("card" + other.toUpperCase()).classList.add("dim");
+  const lower = mine.t.toLowerCase();
+  $("frame").innerHTML = `I prefer <b>${lower}</b> because <span class="blank">&nbsp;</span>.`;
+  $("words").innerHTML = r.words.map(w => `<span class="word">${w}</span>`).join("");
+  $("follow").innerHTML = `<b>Bonus:</b> ${r.follow}`;
+  $("panel").classList.remove("hidden");
+  $("panel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function next() {
+  idx++;
+  if (idx >= ROUNDS.length) { finish(); return; }
+  loadRound();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function finish() {
+  $("recap").innerHTML = picks.map(p => `<span class="chip">${p.e} ${p.t}</span>`).join("");
+  show("end");
+}
+
+function start() {
+  idx = 0; picks = [];
+  buildDots();
+  loadRound();
+  show("game");
+}
+
+$("startBtn").onclick = start;
+$("againBtn").onclick = start;
+$("nextBtn").onclick = next;
+$("cardA").onclick = () => choose("a");
+$("cardB").onclick = () => choose("b");
+
+/* theme */
+const root = document.documentElement;
+function setTheme(t) { root.setAttribute("data-theme", t); $("themeBtn").textContent = t === "dark" ? "☀️" : "🌙"; }
+setTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+$("themeBtn").onclick = () => setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+</script>
+</body>
+</html>
